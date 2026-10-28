@@ -1,0 +1,18 @@
+{
+  "expect": "SCHEMA_INVALID",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "p",
+        "c": [
+          {
+            "t": "text",
+            "v": "x"
+          }
+        ]
+      }
+    ],
+    "html": "<b>x</b>"
+  }
+}

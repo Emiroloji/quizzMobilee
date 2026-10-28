@@ -1,0 +1,12 @@
+{
+  "expect": "valid",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "math_block",
+        "v": "a \\\\href"
+      }
+    ]
+  }
+}

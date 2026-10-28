@@ -1,0 +1,12 @@
+{
+  "expect": "LATEX_FORBIDDEN_ENVIRONMENT",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "math_block",
+        "v": "\\begin{equation} x \\end{equation}"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "expect": "valid",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "p",
+        "c": [
+          {
+            "t": "text",
+            "v": "f(x) = "
+          },
+          {
+            "t": "math",
+            "v": "\\frac{x^2-1}{x-1}"
+          },
+          {
+            "t": "text",
+            "v": " ise "
+          },
+          {
+            "t": "math",
+            "v": "\\lim_{x\\to1} f(x)"
+          },
+          {
+            "t": "text",
+            "v": " kaçtır?"
+          }
+        ]
+      }
+    ]
+  }
+}

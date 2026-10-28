@@ -1,0 +1,12 @@
+{
+  "expect": "SCHEMA_INVALID",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "video",
+        "v": "x"
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$comment": "İzinli KaTeX komutları (mimari.md §7). Backend ve istemciler aynı dosyayı kullanır. Listede olmayan her komut reddedilir; 'forbidden' listesi yalnızca daha açık bir hata mesajı vermek içindir.",
+  "version": 1,
+  "commands": [
+    "alpha", "beta", "gamma", "delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "vartheta",
+    "iota", "kappa", "lambda", "mu", "nu", "xi", "pi", "varpi", "rho", "sigma", "tau", "upsilon",
+    "phi", "varphi", "chi", "psi", "omega",
+    "Gamma", "Delta", "Theta", "Lambda", "Xi", "Pi", "Sigma", "Upsilon", "Phi", "Psi", "Omega",
+
+    "frac", "dfrac", "tfrac", "sqrt", "binom", "dbinom",
+    "overline", "underline", "overrightarrow", "overleftrightarrow", "vec", "hat", "widehat", "bar", "dot", "ddot", "tilde",
+    "sum", "prod", "int", "iint", "oint", "lim", "limsup", "liminf", "max", "min", "sup", "inf",
+    "log", "ln", "lg", "exp", "sin", "cos", "tan", "cot", "sec", "csc", "arcsin", "arccos", "arctan",
+    "sinh", "cosh", "tanh", "deg", "det", "gcd", "mod", "bmod", "pmod",
+
+    "leq", "geq", "neq", "le", "ge", "ne", "approx", "equiv", "sim", "simeq", "cong", "propto",
+    "lt", "gt", "ll", "gg", "subset", "subseteq", "supset", "supseteq", "nsubseteq",
+    "in", "notin", "ni", "cup", "cap", "emptyset", "varnothing", "setminus", "complement",
+    "forall", "exists", "nexists", "mid", "nmid", "parallel", "perp", "angle", "measuredangle", "triangle", "square", "circ",
+    "to", "rightarrow", "leftarrow", "leftrightarrow", "Rightarrow", "Leftarrow", "Leftrightarrow",
+    "iff", "implies", "mapsto", "infty", "partial", "nabla",
+    "cdot", "times", "div", "pm", "mp", "ast", "bullet", "cdots", "ldots", "dots", "vdots", "ddots", "prime",
+    "neg", "land", "lor", "wedge", "vee", "oplus", "otimes", "therefore", "because",
+
+    "left", "right", "big", "Big", "bigg", "Bigg", "langle", "rangle", "lfloor", "rfloor", "lceil", "rceil",
+    "lvert", "rvert", "lVert", "rVert", "vert", "Vert",
+
+    "text", "mathrm", "mathbf", "mathit", "mathbb", "mathcal", "operatorname", "boxed", "overset", "underset", "stackrel",
+    "quad", "qquad", "hline", "displaystyle",
+    "begin", "end"
+  ],
+  "symbols": ["{", "}", ",", ";", ":", "!", " ", "|", "\\", "%", "$", "&", "#", "_"],
+  "environments": ["matrix", "pmatrix", "bmatrix", "vmatrix", "cases", "aligned", "array"],
+  "forbidden": [
+    "href", "url", "includegraphics", "htmlClass", "htmlId", "htmlStyle", "htmlData",
+    "def", "gdef", "edef", "xdef", "newcommand", "renewcommand", "providecommand", "let", "futurelet", "global",
+    "char", "verb", "input", "include"
+  ],
+  "limits": {
+    "maxSourceLength": 2000,
+    "maxSize": 10,
+    "maxExpand": 100
+  }
+}

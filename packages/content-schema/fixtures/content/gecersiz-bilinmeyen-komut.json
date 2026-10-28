@@ -1,0 +1,17 @@
+{
+  "expect": "LATEX_UNKNOWN_COMMAND",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "p",
+        "c": [
+          {
+            "t": "math",
+            "v": "\\foo{x}"
+          }
+        ]
+      }
+    ]
+  }
+}

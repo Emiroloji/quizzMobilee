@@ -24,7 +24,7 @@ infra/                AWS CDK (TS)
 | Araç | Sürüm |
 |---|---|
 | JDK | 21+ yüklü olması yeterli; Java 25 toolchain'i Gradle otomatik indirir |
-| Node | ≥ 20.19 |
+| Node | 24 LTS (`.nvmrc`) |
 | pnpm | 10.x |
 | Docker | Desktop çalışır durumda |
 

@@ -1,0 +1,12 @@
+{
+  "expect": "valid",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "math_block",
+        "v": "f(x)=\\begin{cases} x^2, & x<0 \\\\ 2x, & x\\geq 0 \\end{cases}"
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "expect": "MCQ_DUPLICATE_OPTION_BODY",
+  "value": {
+    "type": "mcq",
+    "options": [
+      {
+        "id": "A",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "7"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "B",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "7"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "shuffle": true
+  }
+}

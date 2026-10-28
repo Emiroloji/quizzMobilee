@@ -1,0 +1,63 @@
+{
+  "expect": "MCQ_CORRECT_NOT_AN_OPTION",
+  "value": {
+    "type": "mcq",
+    "options": [
+      {
+        "id": "A",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "1"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "B",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "2"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "C",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "3"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "correct": [
+      "E"
+    ],
+    "shuffle": true
+  }
+}

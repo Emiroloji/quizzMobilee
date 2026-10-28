@@ -1,0 +1,17 @@
+{
+  "expect": "LATEX_PARSE_ERROR",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "p",
+        "c": [
+          {
+            "t": "math",
+            "v": "\\frac{1}{"
+          }
+        ]
+      }
+    ]
+  }
+}

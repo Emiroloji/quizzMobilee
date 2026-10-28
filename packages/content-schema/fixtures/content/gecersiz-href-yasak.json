@@ -1,0 +1,17 @@
+{
+  "expect": "LATEX_FORBIDDEN_COMMAND",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "p",
+        "c": [
+          {
+            "t": "math",
+            "v": "\\href{https://kotu.example}{tikla}"
+          }
+        ]
+      }
+    ]
+  }
+}

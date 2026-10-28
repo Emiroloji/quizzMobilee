@@ -1,0 +1,12 @@
+{
+  "expect": "LATEX_FORBIDDEN_COMMAND",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "math_block",
+        "v": "\\def\\x{\\x\\x}\\x"
+      }
+    ]
+  }
+}

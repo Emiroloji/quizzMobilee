@@ -1,0 +1,8 @@
+{
+  "expect": "SCHEMA_INVALID",
+  "value": {
+    "type": "numeric",
+    "value": 2.5,
+    "tolerance": 0.01
+  }
+}

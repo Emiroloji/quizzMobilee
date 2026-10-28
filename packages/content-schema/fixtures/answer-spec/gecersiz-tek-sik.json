@@ -1,0 +1,29 @@
+{
+  "expect": "SCHEMA_INVALID",
+  "value": {
+    "type": "mcq",
+    "options": [
+      {
+        "id": "A",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "1"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "shuffle": true
+  }
+}

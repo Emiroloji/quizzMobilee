@@ -1,0 +1,13 @@
+{
+  "expect": "SCHEMA_INVALID",
+  "value": {
+    "schema": 1,
+    "blocks": [
+      {
+        "t": "image",
+        "asset_id": "bir-dosya.png",
+        "alt": "x"
+      }
+    ]
+  }
+}

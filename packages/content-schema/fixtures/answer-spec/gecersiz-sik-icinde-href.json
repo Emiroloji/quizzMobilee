@@ -1,0 +1,46 @@
+{
+  "expect": "LATEX_FORBIDDEN_COMMAND",
+  "value": {
+    "type": "mcq",
+    "options": [
+      {
+        "id": "A",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "text",
+                  "v": "1"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "B",
+        "body": {
+          "schema": 1,
+          "blocks": [
+            {
+              "t": "p",
+              "c": [
+                {
+                  "t": "math",
+                  "v": "\\url{x}"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "shuffle": true
+  }
+}
