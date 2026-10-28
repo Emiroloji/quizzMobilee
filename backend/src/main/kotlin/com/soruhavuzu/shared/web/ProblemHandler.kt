@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -23,6 +26,19 @@ class ProblemHandler : ResponseEntityExceptionHandler() {
     fun handleProblem(e: ProblemException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(e.status), e.message).withCode(e.code)
 
+    // Güvenlik filtresindeki hatalar da HandlerExceptionResolver üzerinden buraya yönlendirilir (identity modülü)
+    @ExceptionHandler(DisabledException::class)
+    fun handleDisabled(): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Hesap aktif değil").withCode(ProblemCode.ACCOUNT_INACTIVE)
+
+    @ExceptionHandler(AuthenticationException::class)
+    fun handleUnauthenticated(): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Kimlik doğrulanamadı").withCode(ProblemCode.UNAUTHORIZED)
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleForbidden(): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Bu işlem için yetkiniz yok").withCode(ProblemCode.FORBIDDEN)
+
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(e: Exception): ProblemDetail {
         // Gövde/PII loglanmaz; yalnızca tip ve iz (kurallar.md §9)
@@ -31,6 +47,21 @@ class ProblemHandler : ResponseEntityExceptionHandler() {
             .forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Beklenmeyen hata")
             .withCode(ProblemCode.INTERNAL_ERROR)
     }
+
+    /** Spring'in kendi ürettiği hatalara (404, 405, 415…) da `code` eklenir: HTTP durum adı. */
+    override fun handleExceptionInternal(
+        ex: Exception,
+        body: Any?,
+        headers: HttpHeaders,
+        statusCode: HttpStatusCode,
+        request: WebRequest,
+    ): ResponseEntity<Any>? =
+        super.handleExceptionInternal(ex, body, headers, statusCode, request)?.also { response ->
+            val problem = response.body as? ProblemDetail
+            if (problem != null && problem.properties?.containsKey("code") != true) {
+                problem.withCode(ProblemCode(HttpStatus.resolve(problem.status)?.name ?: "HTTP_${problem.status}"))
+            }
+        }
 
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException,

@@ -1,0 +1,6 @@
+soruhavuzu:
+  identity:
+    token:
+      provider: local
+      issuer-uri: https://auth.test.soruhavuzu.invalid
+      client-ids: test-mobile,test-admin

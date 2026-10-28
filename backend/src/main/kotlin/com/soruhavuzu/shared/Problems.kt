@@ -11,7 +11,9 @@ package com.soruhavuzu.shared
         val VALIDATION_FAILED = ProblemCode("VALIDATION_FAILED")
         val INVALID_CURSOR = ProblemCode("INVALID_CURSOR")
         val NOT_FOUND = ProblemCode("NOT_FOUND")
+        val UNAUTHORIZED = ProblemCode("UNAUTHORIZED")
         val FORBIDDEN = ProblemCode("FORBIDDEN")
+        val ACCOUNT_INACTIVE = ProblemCode("ACCOUNT_INACTIVE")
         val RATE_LIMITED = ProblemCode("RATE_LIMITED")
         val INTERNAL_ERROR = ProblemCode("INTERNAL_ERROR")
     }

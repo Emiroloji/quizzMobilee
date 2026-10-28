@@ -1,0 +1,115 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "SoruHavuzu API",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "security" : [ {
+    "bearer" : [ ]
+  } ],
+  "paths" : {
+    "/v1/me" : {
+      "get" : {
+        "description" : "Yetki: kimliği doğrulanmış her kullanıcı. İlk istekte kullanıcı otomatik oluşturulur.",
+        "operationId" : "getMe",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MeResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Hata (RFC 9457, application/problem+json)"
+          }
+        },
+        "summary" : "Oturumdaki kullanıcının profili",
+        "tags" : [ "identity" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "MeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "birthYear" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "handle" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "role" : {
+            "type" : "string",
+            "enum" : [ "USER", "EDITOR", "MODERATOR", "ADMIN" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "SUSPENDED", "DELETED" ]
+          },
+          "targetExamId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "createdAt", "handle", "id", "role", "status" ]
+      },
+      "Problem" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "Makine okunur hata kodu, ör. UNAUTHORIZED, NOT_FOUND"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "instance" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "status", "title" ]
+      }
+    },
+    "securitySchemes" : {
+      "bearer" : {
+        "bearerFormat" : "JWT",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  }
+}

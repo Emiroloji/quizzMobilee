@@ -27,6 +27,9 @@ potential-bugs:
     active: true
     excludes: ['**/test/**']
 naming:
+  MatchingDeclarationName:
+    # mimari.md §5.3: olaylar <Modul>Events.kt dosyasında toplanır (ADR 0013)
+    excludes: ['**/events/**']
   FunctionNaming:
     # Test adları backtick'li Türkçe davranış cümlesidir (kurallar.md §7)
     excludes: ['**/test/**']

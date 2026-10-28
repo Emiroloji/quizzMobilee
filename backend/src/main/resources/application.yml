@@ -26,7 +26,17 @@ management:
       exposure:
         include: health,info,modulith
 
+springdoc:
+  default-produces-media-type: application/json
+  writer-with-order-by-keys: true
+  writer-with-default-pretty-printer: true
+
 soruhavuzu:
+  identity:
+    token:
+      provider: cognito
+      issuer-uri: ${COGNITO_ISSUER_URI:}
+      client-ids: ${COGNITO_CLIENT_IDS:}
   practice:
     attempt-partitions:
       months-ahead: 3

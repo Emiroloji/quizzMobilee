@@ -4,3 +4,7 @@ ktlint_code_style = ktlint_official
 max_line_length = 140
 ktlint_standard_function-naming = disabled
 ktlint_standard_no-wildcard-imports = enabled
+
+# mimari.md §5.3: olaylar <Modul>Events.kt dosyasında toplanır (ADR 0013)
+[src/main/kotlin/com/soruhavuzu/events/**.kt]
+ktlint_standard_filename = disabled

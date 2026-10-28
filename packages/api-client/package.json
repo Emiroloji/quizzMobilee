@@ -1,0 +1,20 @@
+{
+  "name": "@soruhavuzu/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "OpenAPI'den üretilen tipli API istemcisi (ADR 0017). src/schema.ts elle düzenlenmez.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "generate": "openapi-typescript openapi.json --output src/schema.ts",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -9,6 +9,7 @@
     "dev:all": "make dev",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "api:generate": "cd backend && ./gradlew test --tests com.soruhavuzu.OpenApiDocumentTests && cd .. && pnpm --filter @soruhavuzu/api-client generate"
   }
 }

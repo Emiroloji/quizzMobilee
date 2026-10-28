@@ -1,0 +1,13 @@
+# Lokal geliştirme: docker-compose Postgres + sahte JWT üretici (ADR 0018)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/soruhavuzu
+    username: soruhavuzu
+    password: soruhavuzu
+
+soruhavuzu:
+  identity:
+    token:
+      provider: local
+      issuer-uri: https://auth.local.soruhavuzu.invalid
+      client-ids: local-mobile,local-admin
