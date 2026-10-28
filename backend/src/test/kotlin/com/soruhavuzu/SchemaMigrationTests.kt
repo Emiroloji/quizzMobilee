@@ -1,6 +1,7 @@
 package com.soruhavuzu
 
 import com.soruhavuzu.support.IntegrationTest
+import com.soruhavuzu.support.attemptPartitionNames
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
@@ -25,14 +26,16 @@ class SchemaMigrationTests : IntegrationTest() {
     @Test
     fun `mimari dokümandaki tüm tablolar v2 dahil mevcuttur`() {
         EXPECTED_TABLES.forEach { (schema, tables) ->
-            val actual = jdbc.queryForList(
-                """
-                SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-                WHERE n.nspname = ? AND c.relkind IN ('r', 'p') AND NOT c.relispartition
-                """.trimIndent(),
-                String::class.java,
-                schema,
-            ).toSet()
+            val actual =
+                jdbc
+                    .queryForList(
+                        """
+                        SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                        WHERE n.nspname = ? AND c.relkind IN ('r', 'p') AND NOT c.relispartition
+                        """.trimIndent(),
+                        String::class.java,
+                        schema,
+                    ).toSet()
             actual shouldBe tables
         }
     }
@@ -52,7 +55,11 @@ class SchemaMigrationTests : IntegrationTest() {
               selected, is_correct, is_first, duration_ms, created_at)
             VALUES (?, ?, ?, ?, ?, 'PRACTICE', '{"options":["B"]}', true, true, 4200, now())
             """.trimIndent(),
-            attemptId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            attemptId,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
         )
         assertImmutable("practice.attempts", "is_correct = false", attemptId)
     }
@@ -60,10 +67,11 @@ class SchemaMigrationTests : IntegrationTest() {
     @Test
     fun `idempotency anahtarında UPDATE ve DELETE reddedilir, aynı anahtar ikinci kez yazılmaz`() {
         val key = UUID.randomUUID()
-        val insert = """
+        val insert =
+            """
             INSERT INTO practice.attempt_keys (client_attempt_id, user_id, attempt_id, created_at)
             VALUES (?, ?, ?, now()) ON CONFLICT DO NOTHING
-        """.trimIndent()
+            """.trimIndent()
         jdbc.update(insert, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 1
         jdbc.update(insert, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 0
         shouldThrow<DataAccessException> {
@@ -79,7 +87,9 @@ class SchemaMigrationTests : IntegrationTest() {
             INSERT INTO moderation.moderation_actions (id, target_type, target_id, actor_id, action, created_at)
             VALUES (?, 'QUESTION', ?, ?, 'APPROVE', now())
             """.trimIndent(),
-            id, UUID.randomUUID(), UUID.randomUUID(),
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
         )
         assertImmutable("moderation.moderation_actions", "reason = 'x'", id)
     }
@@ -88,8 +98,13 @@ class SchemaMigrationTests : IntegrationTest() {
     fun `itibar defterinde UPDATE ve DELETE veritabanında reddedilir`() {
         val id = UUID.randomUUID()
         jdbc.update(
-            "INSERT INTO reputation.reputation_events (id, user_id, kind, delta, ref_id, created_at) VALUES (?, ?, 'QUESTION_ACTIVE', 5, ?, now())",
-            id, UUID.randomUUID(), UUID.randomUUID(),
+            """
+            INSERT INTO reputation.reputation_events (id, user_id, kind, delta, ref_id, created_at)
+            VALUES (?, ?, 'QUESTION_ACTIVE', 5, ?, now())
+            """.trimIndent(),
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
         )
         assertImmutable("reputation.reputation_events", "delta = 500", id)
     }
@@ -104,25 +119,30 @@ class SchemaMigrationTests : IntegrationTest() {
     @Test
     fun `attempts bu ay dahil en az 3 aylık partition ile başlar`() {
         val month = LocalDate.now().withDayOfMonth(1)
-        val expected = (0L..2L).map { month.plusMonths(it) }
-            .map { "attempts_y%04dm%02d".format(it.year, it.monthValue) }
-        val partitions = jdbc.queryForList(
-            "SELECT c.relname FROM pg_inherits i JOIN pg_class c ON c.oid = i.inhrelid WHERE i.inhparent = 'practice.attempts'::regclass",
-            String::class.java,
-        )
+        val expected =
+            (0L..2L)
+                .map { month.plusMonths(it) }
+                .map { "attempts_y%04dm%02d".format(it.year, it.monthValue) }
+        val partitions =
+            jdbc.attemptPartitionNames()
         partitions shouldContainAll expected
     }
 
     @Test
     fun `olay kaydı, kilit ve migration geçmişi platform şemasındadır`() {
-        val tables = jdbc.queryForList(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'platform'",
-            String::class.java,
-        )
+        val tables =
+            jdbc.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'platform'",
+                String::class.java,
+            )
         tables shouldContainAll listOf("event_publication", "shedlock", "flyway_schema_history")
     }
 
-    private fun assertImmutable(table: String, setClause: String, id: UUID) {
+    private fun assertImmutable(
+        table: String,
+        setClause: String,
+        id: UUID,
+    ) {
         shouldThrow<DataAccessException> { jdbc.update("UPDATE $table SET $setClause WHERE id = ?", id) }
             .message shouldContain "IMMUTABLE_TABLE"
         shouldThrow<DataAccessException> { jdbc.update("DELETE FROM $table WHERE id = ?", id) }
@@ -138,7 +158,10 @@ class SchemaMigrationTests : IntegrationTest() {
               originality_declared_at, created_at, updated_at)
             VALUES (?, ?, ?, ?, 'DRAFT', 7, now(), now(), now())
             """.trimIndent(),
-            questionId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+            questionId,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
         )
         jdbc.update(
             """
@@ -147,31 +170,43 @@ class SchemaMigrationTests : IntegrationTest() {
             VALUES (?, ?, 1, '{"schema":1,"blocks":[]}', '{"type":"mcq"}', '{"schema":1,"blocks":[]}',
               'mcq', 5, '\x00'::bytea, 1, ?, now())
             """.trimIndent(),
-            versionId, questionId, UUID.randomUUID(),
+            versionId,
+            questionId,
+            UUID.randomUUID(),
         )
         return versionId
     }
 
     private companion object {
-        val IMMUTABLE_TABLES = listOf(
-            "content.question_versions", "practice.attempts", "practice.attempt_keys",
-            "moderation.moderation_actions", "reputation.reputation_events",
-        )
+        val IMMUTABLE_TABLES =
+            listOf(
+                "content.question_versions",
+                "practice.attempts",
+                "practice.attempt_keys",
+                "moderation.moderation_actions",
+                "reputation.reputation_events",
+            )
 
-        val EXPECTED_TABLES = mapOf(
-            "platform" to setOf("event_publication", "shedlock", "flyway_schema_history"),
-            "identity" to setOf("users", "auth_identities", "devices"),
-            "taxonomy" to setOf("exams", "topics"),
-            "media" to setOf("assets"),
-            "content" to setOf(
-                "questions", "question_versions", "question_version_embeddings", "question_topics", "question_assets",
-            ),
-            "practice" to setOf("sessions", "attempts", "attempt_keys", "user_question_state", "question_pool"),
-            "calibration" to setOf("question_difficulty", "user_skill", "uploader_bias", "difficulty_votes"),
-            "moderation" to setOf("reports", "review_items", "key_suspects", "moderation_actions", "sanctions"),
-            "reputation" to setOf("reputation_events", "reputation_balances"),
-            "stats" to setOf("daily_activity", "topic_stats"),
-            "notification" to setOf("notifications"),
-        )
+        val EXPECTED_TABLES =
+            mapOf(
+                "platform" to setOf("event_publication", "shedlock", "flyway_schema_history"),
+                "identity" to setOf("users", "auth_identities", "devices"),
+                "taxonomy" to setOf("exams", "topics"),
+                "media" to setOf("assets"),
+                "content" to
+                    setOf(
+                        "questions",
+                        "question_versions",
+                        "question_version_embeddings",
+                        "question_topics",
+                        "question_assets",
+                    ),
+                "practice" to setOf("sessions", "attempts", "attempt_keys", "user_question_state", "question_pool"),
+                "calibration" to setOf("question_difficulty", "user_skill", "uploader_bias", "difficulty_votes"),
+                "moderation" to setOf("reports", "review_items", "key_suspects", "moderation_actions", "sanctions"),
+                "reputation" to setOf("reputation_events", "reputation_balances"),
+                "stats" to setOf("daily_activity", "topic_stats"),
+                "notification" to setOf("notifications"),
+            )
     }
 }

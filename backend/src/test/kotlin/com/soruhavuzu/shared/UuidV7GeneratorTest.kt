@@ -31,7 +31,9 @@ class UuidV7GeneratorTest {
     }
 }
 
-private class FixedRandomSource(private val fill: Byte) : RandomSource {
+private class FixedRandomSource(
+    private val fill: Byte,
+) : RandomSource {
     override fun nextDouble(): Double = 0.5
 
     override fun nextBytes(size: Int): ByteArray = ByteArray(size) { fill }

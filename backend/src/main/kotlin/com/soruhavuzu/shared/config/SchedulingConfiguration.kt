@@ -17,7 +17,8 @@ class SchedulingConfiguration {
     @Bean
     fun lockProvider(dataSource: DataSource): LockProvider =
         JdbcTemplateLockProvider(
-            JdbcTemplateLockProvider.Configuration.builder()
+            JdbcTemplateLockProvider.Configuration
+                .builder()
                 .withJdbcTemplate(JdbcTemplate(dataSource))
                 .withTableName("platform.shedlock")
                 .usingDbTime()

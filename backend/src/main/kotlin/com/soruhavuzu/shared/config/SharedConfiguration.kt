@@ -18,10 +18,15 @@ class SharedConfiguration {
     fun randomSource(): RandomSource = SecureRandomSource(SecureRandom())
 
     @Bean
-    fun idGenerator(clock: Clock, randomSource: RandomSource): IdGenerator = UuidV7Generator(clock, randomSource)
+    fun idGenerator(
+        clock: Clock,
+        randomSource: RandomSource,
+    ): IdGenerator = UuidV7Generator(clock, randomSource)
 }
 
-private class SecureRandomSource(private val random: SecureRandom) : RandomSource {
+private class SecureRandomSource(
+    private val random: SecureRandom,
+) : RandomSource {
     override fun nextDouble(): Double = random.nextDouble()
 
     override fun nextBytes(size: Int): ByteArray = ByteArray(size).also(random::nextBytes)

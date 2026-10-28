@@ -4,7 +4,9 @@ package com.soruhavuzu.shared
  * RFC 9457 yanıtlarındaki makine okunur `code` alanı (mimari.md §15).
  * Yeni kod eklemek serbest; var olanı değiştirmek kırıcı değişikliktir (kurallar.md §5).
  */
-@JvmInline value class ProblemCode(val value: String) {
+@JvmInline value class ProblemCode(
+    val value: String,
+) {
     companion object {
         val VALIDATION_FAILED = ProblemCode("VALIDATION_FAILED")
         val INVALID_CURSOR = ProblemCode("INVALID_CURSOR")

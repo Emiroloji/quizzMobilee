@@ -24,9 +24,20 @@ class ModularityTests {
     }
 
     private companion object {
-        val EXPECTED_MODULES = setOf(
-            "shared", "events", "identity", "taxonomy", "media", "content", "practice",
-            "calibration", "moderation", "reputation", "stats", "notification",
-        )
+        val EXPECTED_MODULES =
+            setOf(
+                "shared",
+                "events",
+                "identity",
+                "taxonomy",
+                "media",
+                "content",
+                "practice",
+                "calibration",
+                "moderation",
+                "reputation",
+                "stats",
+                "notification",
+            )
     }
 }

@@ -27,7 +27,8 @@ class ProblemHandler : ResponseEntityExceptionHandler() {
     fun handleUnexpected(e: Exception): ProblemDetail {
         // Gövde/PII loglanmaz; yalnızca tip ve iz (kurallar.md §9)
         log.error("unexpected_error type={}", e.javaClass.name, e)
-        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Beklenmeyen hata")
+        return ProblemDetail
+            .forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Beklenmeyen hata")
             .withCode(ProblemCode.INTERNAL_ERROR)
     }
 
@@ -36,9 +37,10 @@ class ProblemHandler : ResponseEntityExceptionHandler() {
         headers: HttpHeaders,
         status: HttpStatusCode,
         request: WebRequest,
-    ): ResponseEntity<Any>? = super.handleMethodArgumentNotValid(ex, headers, status, request)?.also { response ->
-        (response.body as? ProblemDetail)?.withCode(ProblemCode.VALIDATION_FAILED)
-    }
+    ): ResponseEntity<Any>? =
+        super.handleMethodArgumentNotValid(ex, headers, status, request)?.also { response ->
+            (response.body as? ProblemDetail)?.withCode(ProblemCode.VALIDATION_FAILED)
+        }
 
     private fun ProblemDetail.withCode(code: ProblemCode): ProblemDetail = apply { setProperty("code", code.value) }
 }

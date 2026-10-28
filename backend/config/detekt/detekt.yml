@@ -1,0 +1,32 @@
+# kurallar.md §3.1 yasakları. Varsayılan kurallar üzerine kurulur (buildUponDefaultConfig).
+style:
+  ForbiddenImport:
+    active: true
+    imports:
+      - value: 'java.time.LocalDateTime'
+        reason: 'Zaman yalnızca Instant ile temsil edilir (kurallar.md §3.1).'
+      - value: 'org.springframework.beans.factory.annotation.Autowired'
+        reason: 'Yalnızca constructor injection (kurallar.md §3.1).'
+    excludes: ['**/test/**']
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: 'java.time.Instant.now'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
+      - value: 'java.util.UUID.randomUUID'
+        reason: 'Kimlikler IdGenerator (UUIDv7) ile üretilir (ADR 0011).'
+    excludes: ['**/test/**']
+  MagicNumber:
+    excludes: ['**/test/**']
+  MaxLineLength:
+    maxLineLength: 140
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+  LateinitUsage:
+    active: true
+    excludes: ['**/test/**']
+naming:
+  FunctionNaming:
+    # Test adları backtick'li Türkçe davranış cümlesidir (kurallar.md §7)
+    excludes: ['**/test/**']

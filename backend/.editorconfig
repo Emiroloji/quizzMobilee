@@ -1,0 +1,6 @@
+# ktlint ayarları (repo kökündeki .editorconfig'i tamamlar)
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+max_line_length = 140
+ktlint_standard_function-naming = disabled
+ktlint_standard_no-wildcard-imports = enabled

@@ -20,13 +20,15 @@ class UuidV7Generator(
     override fun newId(): UUID {
         val millis = clock.millis()
         val rand = random.nextBytes(RANDOM_BYTES)
-        val bytes = ByteBuffer.allocate(UUID_BYTES)
-            .putShort((millis ushr 32).toShort())
-            .putInt(millis.toInt())
-            .put(rand)
-            .array()
-        bytes[6] = ((bytes[6].toInt() and 0x0F) or 0x70).toByte() // sürüm 7
-        bytes[8] = ((bytes[8].toInt() and 0x3F) or 0x80).toByte() // varyant 10xx
+        val bytes =
+            ByteBuffer
+                .allocate(UUID_BYTES)
+                .putShort((millis ushr TIMESTAMP_HIGH_SHIFT).toShort())
+                .putInt(millis.toInt())
+                .put(rand)
+                .array()
+        bytes[VERSION_BYTE] = ((bytes[VERSION_BYTE].toInt() and LOW_NIBBLE) or VERSION_7).toByte()
+        bytes[VARIANT_BYTE] = ((bytes[VARIANT_BYTE].toInt() and LOW_SIX_BITS) or RFC_VARIANT).toByte()
         val buffer = ByteBuffer.wrap(bytes)
         return UUID(buffer.long, buffer.long)
     }
@@ -34,5 +36,12 @@ class UuidV7Generator(
     private companion object {
         const val UUID_BYTES = 16
         const val RANDOM_BYTES = 10
+        const val TIMESTAMP_HIGH_SHIFT = 32
+        const val VERSION_BYTE = 6
+        const val VARIANT_BYTE = 8
+        const val LOW_NIBBLE = 0x0F
+        const val LOW_SIX_BITS = 0x3F
+        const val VERSION_7 = 0x70
+        const val RFC_VARIANT = 0x80 // 10xx
     }
 }

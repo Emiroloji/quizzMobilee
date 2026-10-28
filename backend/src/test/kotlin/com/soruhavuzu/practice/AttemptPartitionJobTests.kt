@@ -4,6 +4,7 @@ import com.soruhavuzu.practice.internal.application.AttemptPartitionJob
 import com.soruhavuzu.practice.internal.application.AttemptPartitionPort
 import com.soruhavuzu.practice.internal.application.PracticeProperties
 import com.soruhavuzu.support.IntegrationTest
+import com.soruhavuzu.support.attemptPartitionNames
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -23,17 +24,14 @@ class AttemptPartitionJobTests : IntegrationTest() {
     @Autowired
     lateinit var jdbc: JdbcTemplate
 
-    private fun jobAt(instant: String) =
-        AttemptPartitionJob(port, properties, Clock.fixed(Instant.parse(instant), ZoneOffset.UTC))
+    private fun jobAt(instant: String) = AttemptPartitionJob(port, properties, Clock.fixed(Instant.parse(instant), ZoneOffset.UTC))
 
     @Test
     fun `iş, Clock'taki aydan başlayarak ayarlanan sayıda aylık partition oluşturur`() {
         jobAt("2031-11-15T10:00:00Z").ensurePartitions() shouldBe 3
 
-        val partitions = jdbc.queryForList(
-            "SELECT c.relname FROM pg_inherits i JOIN pg_class c ON c.oid = i.inhrelid WHERE i.inhparent = 'practice.attempts'::regclass",
-            String::class.java,
-        )
+        val partitions =
+            jdbc.attemptPartitionNames()
         partitions shouldContainAll listOf("attempts_y2031m11", "attempts_y2031m12", "attempts_y2032m01")
     }
 

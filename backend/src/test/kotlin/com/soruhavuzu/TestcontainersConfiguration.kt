@@ -8,11 +8,8 @@ import org.testcontainers.utility.DockerImageName
 
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
-
-	@Bean
-	@ServiceConnection
-	fun postgresContainer(): PostgreSQLContainer {
-		return PostgreSQLContainer(DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"))
-	}
-
+    @Bean
+    @ServiceConnection
+    fun postgresContainer(): PostgreSQLContainer =
+        PostgreSQLContainer(DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"))
 }

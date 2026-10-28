@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.ktlint)
 }
 
 group = "com.soruhavuzu"
@@ -20,7 +22,11 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom(libs.spring.modulith.bom.get().toString())
+        mavenBom(
+            libs.spring.modulith.bom
+                .get()
+                .toString(),
+        )
     }
 }
 
@@ -75,4 +81,31 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("config/detekt/detekt.yml"))
+    parallel = true
+}
+
+ktlint {
+    version = libs.versions.ktlint.get()
+}
+
+// detekt 1.23 kendi Kotlin derleyicisiyle (2.0.21) çalışır; projenin Kotlin sürümünü almasın
+configurations.matching { it.name == "detekt" || it.name.startsWith("detekt") }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion("2.0.21")
+        }
+    }
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "22" // detekt 1.23'ün desteklediği en yüksek hedef; yalnızca analiz için
+}
+
+tasks.named("check") {
+    dependsOn("detektMain") // type-resolution gerektiren yasaklar (!!, Instant.now) yalnızca burada çalışır
 }

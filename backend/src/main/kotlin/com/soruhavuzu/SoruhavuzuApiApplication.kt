@@ -8,6 +8,7 @@ import org.springframework.boot.runApplication
 @ConfigurationPropertiesScan
 class SoruhavuzuApiApplication
 
+@Suppress("SpreadOperator") // Spring Boot'un standart giriş noktası; tek seferlik
 fun main(args: Array<String>) {
-	runApplication<SoruhavuzuApiApplication>(*args)
+    runApplication<SoruhavuzuApiApplication>(*args)
 }
