@@ -1,4 +1,6 @@
 soruhavuzu:
+  web:
+    allowed-origins: http://localhost:5173
   identity:
     token:
       provider: local

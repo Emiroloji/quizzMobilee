@@ -15,8 +15,8 @@ export interface ContentIssue {
 export type ValidationResult<T> = { ok: true; value: T } | { ok: false; issues: ContentIssue[] };
 
 function toIssue(zodIssue: z.core.$ZodIssue): ContentIssue {
-  const params = zodIssue.code === "custom" ? (zodIssue.params as { code?: unknown } | undefined) : undefined;
-  const code = typeof params?.code === "string" ? params.code : SCHEMA_INVALID;
+  const custom: unknown = zodIssue.code === "custom" ? zodIssue.params?.code : undefined;
+  const code = typeof custom === "string" ? custom : SCHEMA_INVALID;
   return { path: ["$", ...zodIssue.path.map(String)].join("."), code, message: zodIssue.message };
 }
 

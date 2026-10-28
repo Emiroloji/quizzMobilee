@@ -6,7 +6,7 @@ import { buildJsonSchema, SCHEMA_INVALID, validateAnswerSpec, validateContent } 
 import { loadFixtures } from "./fixtures";
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });
-addFormats.default(ajv);
+addFormats(ajv);
 ajv.addSchema(buildJsonSchema());
 const ajvContent = ajv.getSchema("https://schemas.soruhavuzu.app/content/v1.json#/$defs/Content");
 const ajvAnswerSpec = ajv.getSchema("https://schemas.soruhavuzu.app/content/v1.json#/$defs/AnswerSpec");

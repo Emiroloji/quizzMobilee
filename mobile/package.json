@@ -1,0 +1,58 @@
+{
+  "name": "@soruhavuzu/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "57.0.17",
+    "@soruhavuzu/api-client": "workspace:*",
+    "@soruhavuzu/content-schema": "workspace:*",
+    "@tanstack/react-query": "5.104.2",
+    "expo": "57.0.29",
+    "expo-auth-session": "57.0.16",
+    "expo-constants": "57.0.22",
+    "expo-crypto": "57.0.4",
+    "expo-linking": "57.0.13",
+    "expo-router": "57.0.27",
+    "expo-secure-store": "57.0.4",
+    "expo-status-bar": "57.0.1",
+    "expo-web-browser": "57.0.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "2.32.0",
+    "react-native-reanimated": "4.5.5",
+    "react-native-safe-area-context": "5.7.0",
+    "react-native-screens": "4.26.2",
+    "react-native-web": "0.21.4",
+    "react-native-webview": "13.16.1",
+    "react-native-worklets": "0.10.4",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "0.86.3",
+    "@react-native/metro-config": "0.86.3",
+    "@testing-library/react-native": "14.1.0",
+    "@types/jest": "29.5.14",
+    "@types/react": "19.2.18",
+    "jest": "29.7.0",
+    "jest-expo": "57.0.6",
+    "test-renderer": "1.2.0",
+    "typescript": "5.9.3"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.expo/"
+    ]
+  }
+}

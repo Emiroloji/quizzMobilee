@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.options
 import java.util.UUID
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -91,6 +92,31 @@ class MeEndpointTests : IntegrationTest() {
             content { contentTypeCompatibleWith("application/problem+json") }
             jsonPath("$.code") { value("NOT_FOUND") }
         }
+    }
+
+    @Test
+    fun `izinli origin'den gelen CORS ön isteği kabul edilir`() {
+        mvc
+            .options("/v1/me") {
+                header(HttpHeaders.ORIGIN, "http://localhost:5173")
+                header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+                header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "authorization")
+            }.andExpect {
+                status { isOk() }
+                header { string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173") }
+            }
+    }
+
+    @Test
+    fun `izinsiz origin'den gelen CORS ön isteği reddedilir`() {
+        mvc
+            .options("/v1/me") {
+                header(HttpHeaders.ORIGIN, "https://kotu.example")
+                header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+            }.andExpect {
+                status { isForbidden() }
+                header { doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN) }
+            }
     }
 
     @Test

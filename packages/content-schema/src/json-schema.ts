@@ -8,7 +8,14 @@ export const JSON_SCHEMA_ID = "https://schemas.soruhavuzu.app/content/v1.json";
  * schema.json'ın içeriği: zod tanımlarından üretilir (ADR 0019). Anlamsal kurallar (LATEX_*, MCQ_*)
  * JSON Schema'da ifade edilemez; backend onları fixtures/ korpusuyla doğrulanan kendi koduyla uygular.
  */
-export function buildJsonSchema(): Record<string, unknown> {
+export interface ContentJsonSchema {
+  $schema: string;
+  $id: string;
+  title: string;
+  $defs: Record<string, unknown>;
+}
+
+export function buildJsonSchema(): ContentJsonSchema {
   const registry = z.registry<{ id: string }>();
   registry.add(contentSchema, { id: "Content" });
   registry.add(answerSpecSchema, { id: "AnswerSpec" });
@@ -20,7 +27,7 @@ export function buildJsonSchema(): Record<string, unknown> {
   const defs = Object.fromEntries(
     Object.entries(schemas).map(([id, schema]) => {
       // zod her tanıma "#/$defs/<id>" biçiminde $id ekler; spesifikasyon $id'de fragment'a izin vermez
-      const { $schema: _schema, $id: _id, ...rest } = schema as Record<string, unknown>;
+      const { $schema: _schema, $id: _id, ...rest } = schema;
       return [id, rest];
     }),
   );

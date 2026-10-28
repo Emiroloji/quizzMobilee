@@ -6,6 +6,8 @@ spring:
     password: soruhavuzu
 
 soruhavuzu:
+  web:
+    allowed-origins: http://localhost:5173,http://localhost:8081
   identity:
     token:
       provider: local

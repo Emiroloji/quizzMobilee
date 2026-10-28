@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { type Content, renderHtml, toPlainText } from "../src";
+import { type Content, renderDocument, renderHtml, toPlainText } from "../src";
 
 const ASSET = "0192f0c4-7a1b-7c3d-8e4f-a1b2c3d4e5f6";
 const options = { assetUrl: (id: string) => `https://cdn.soruhavuzu.test/public/${id}.webp` };
@@ -43,5 +43,23 @@ describe("renderHtml", () => {
 describe("toPlainText", () => {
   it("LaTeX'i kaynak olarak bırakır, blokları satırlara ayırır", () => {
     expect(toPlainText(question)).toBe("f(x) = \\frac{1}{x} ise?\n\\int_0^1 x\\,dx\nŞekil 1");
+  });
+});
+
+describe("renderDocument", () => {
+  it("fontları gömülü, dış kaynaksız ve betiksiz bağımsız belge üretir", () => {
+    const doc = renderDocument(question, options);
+    expect(doc).toMatch(/^<!doctype html><html lang="tr">/);
+    expect(doc).toContain("default-src 'none'");
+    expect(doc).toContain("data:font/woff2;base64,");
+    expect(doc).not.toContain("url(fonts/");
+    expect(doc).not.toMatch(/<script/i);
+    expect(doc).toContain('<div class="sh-content">');
+  });
+
+  it("tema rengine CSS enjeksiyonu yapılamaz", () => {
+    expect(() =>
+      renderDocument(question, { ...options, theme: { text: "red;}</style><script>", background: "#fff", fontSizePx: 16 } }),
+    ).toThrow(/tema/);
   });
 });

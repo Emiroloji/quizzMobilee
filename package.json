@@ -7,9 +7,19 @@
   },
   "scripts": {
     "dev:all": "make dev",
-    "lint": "pnpm -r --if-present lint",
+    "lint": "eslint .",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "api:generate": "cd backend && ./gradlew test --tests com.soruhavuzu.OpenApiDocumentTests && cd .. && pnpm --filter @soruhavuzu/api-client generate"
+  },
+  "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "4.8.1",
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-plugin-i18next": "6.1.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.2"
   }
 }
