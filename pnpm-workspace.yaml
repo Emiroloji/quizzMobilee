@@ -1,0 +1,6 @@
+packages:
+  - packages/*
+  - mobile
+  - admin
+  - lambdas/*
+  - infra

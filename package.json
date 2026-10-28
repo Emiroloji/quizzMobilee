@@ -1,0 +1,14 @@
+{
+  "name": "soruhavuzu",
+  "private": true,
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev:all": "make dev",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test"
+  }
+}

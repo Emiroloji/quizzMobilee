@@ -1,0 +1,36 @@
+# genel
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# node
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# gradle / kotlin
+.gradle/
+backend/build/
+.kotlin/
+out/
+
+# expo
+mobile/.expo/
+mobile/ios/
+mobile/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# cdk
+infra/cdk.out/
