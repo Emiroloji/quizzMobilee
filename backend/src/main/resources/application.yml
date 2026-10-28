@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: soruhavuzu-api
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  flyway:
+    # Altyapı tabloları ve Flyway geçmişi platform şemasında (ADR 0014)
+    default-schema: platform
+    create-schemas: true
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        schema: platform
+
+server:
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+
+soruhavuzu:
+  practice:
+    attempt-partitions:
+      months-ahead: 3
+      cron: "0 0 3 * * *"
