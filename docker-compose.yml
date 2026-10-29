@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: soruhavuzu
       POSTGRES_USER: soruhavuzu
       POSTGRES_PASSWORD: soruhavuzu
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: [postgres-data:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U soruhavuzu -d soruhavuzu"]
@@ -19,7 +19,7 @@ services:
   s3:
     image: chrislusf/seaweedfs:4.48
     command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
-    ports: ["8333:8333"]
+    ports: ["127.0.0.1:8333:8333"]
     volumes:
       - s3-data:/data
       - ./infra/local/s3.json:/etc/seaweedfs/s3.json:ro
@@ -43,7 +43,7 @@ services:
 
   sqs:
     image: softwaremill/elasticmq-native:1.7.1
-    ports: ["9324:9324"]
+    ports: ["127.0.0.1:9324:9324"]
     volumes: [./infra/local/elasticmq.conf:/opt/elasticmq.conf:ro]
 
 volumes:
