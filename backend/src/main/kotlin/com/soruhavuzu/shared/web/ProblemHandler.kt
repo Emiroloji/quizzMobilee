@@ -42,7 +42,12 @@ class ProblemHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(e: Exception): ProblemDetail {
         // Gövde/PII loglanmaz; yalnızca tip ve iz (kurallar.md §9)
-        log.error("unexpected_error type={}", e.javaClass.name, e)
+        log
+            .atError()
+            .setCause(e)
+            .addKeyValue("event", "unexpected_error")
+            .addKeyValue("type", e.javaClass.name)
+            .log("Beklenmeyen hata")
         return ProblemDetail
             .forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Beklenmeyen hata")
             .withCode(ProblemCode.INTERNAL_ERROR)

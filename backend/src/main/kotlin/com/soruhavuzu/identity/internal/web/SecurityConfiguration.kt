@@ -1,5 +1,7 @@
 package com.soruhavuzu.identity.internal.web
 
+import com.soruhavuzu.shared.logging.UserIdHasher
+import com.soruhavuzu.shared.logging.UserIdLoggingFilter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Qualifier
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.AuthenticationException
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
@@ -29,6 +32,7 @@ class SecurityConfiguration {
         http: HttpSecurity,
         userAuthenticationConverter: UserAuthenticationConverter,
         problemSecurityHandler: ProblemSecurityHandler,
+        userIdHasher: UserIdHasher,
     ): SecurityFilterChain =
         http
             .csrf { it.disable() }
@@ -52,7 +56,8 @@ class SecurityConfiguration {
                     .accessDeniedHandler(problemSecurityHandler)
             }.exceptionHandling {
                 it.authenticationEntryPoint(problemSecurityHandler).accessDeniedHandler(problemSecurityHandler)
-            }.build()
+            }.addFilterAfter(UserIdLoggingFilter(userIdHasher), BearerTokenAuthenticationFilter::class.java)
+            .build()
 
     @Bean
     fun problemSecurityHandler(

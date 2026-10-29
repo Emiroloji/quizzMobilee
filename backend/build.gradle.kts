@@ -20,6 +20,9 @@ repositories {
     mavenCentral()
 }
 
+// OpenTelemetry Java agent: uygulamaya derlenmez, JVM'e -javaagent ile takılır (mimari.md §2, §18)
+val otelAgent: Configuration by configurations.creating
+
 dependencyManagement {
     imports {
         mavenBom(
@@ -70,6 +73,27 @@ dependencies {
     testImplementation(libs.springmockk)
     testImplementation(libs.archunit.junit5)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    otelAgent(libs.opentelemetry.javaagent)
+}
+
+val otelAgentJar by tasks.registering(Copy::class) {
+    description = "OpenTelemetry Java agent'ını build/otel/ altına kopyalar (Docker imajı da bunu kullanır)."
+    from(otelAgent)
+    into(layout.buildDirectory.dir("otel"))
+    rename { "opentelemetry-javaagent.jar" }
+}
+
+// ./gradlew bootRun -Potel → agent takılı çalışır; lokal'de dışa aktarım kapalıdır, iz kimlikleri log'a yazılır
+tasks.bootRun {
+    if (project.hasProperty("otel")) {
+        dependsOn(otelAgentJar)
+        jvmArgs("-javaagent:${layout.buildDirectory.file("otel/opentelemetry-javaagent.jar").get().asFile}")
+        environment("OTEL_SERVICE_NAME", "soruhavuzu-api")
+        environment("OTEL_TRACES_EXPORTER", "none")
+        environment("OTEL_METRICS_EXPORTER", "none")
+        environment("OTEL_LOGS_EXPORTER", "none")
+    }
 }
 
 kotlin {

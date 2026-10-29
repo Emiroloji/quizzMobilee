@@ -17,6 +17,12 @@ spring:
       jdbc:
         schema: platform
 
+logging:
+  structured:
+    # mimari.md §18 alanları; local ve test profilleri insan-okur biçimi kullanır
+    format:
+      console: com.soruhavuzu.shared.logging.JsonLogFormatter
+
 server:
   shutdown: graceful
 
@@ -32,6 +38,8 @@ springdoc:
   writer-with-default-pretty-printer: true
 
 soruhavuzu:
+  logging:
+    user-id-hash-key: ${LOG_USER_ID_HASH_KEY:}
   identity:
     token:
       provider: cognito

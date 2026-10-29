@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "soruhavuzu-local",
+      "credentials": [{ "accessKey": "local", "secretKey": "local-secret" }],
+      "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+    }
+  ]
+}

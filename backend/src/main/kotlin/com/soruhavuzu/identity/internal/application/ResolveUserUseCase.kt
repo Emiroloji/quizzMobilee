@@ -1,16 +1,13 @@
 package com.soruhavuzu.identity.internal.application
 
 import com.soruhavuzu.events.identity.UserRegistered
-import com.soruhavuzu.identity.internal.domain.Handle
 import com.soruhavuzu.identity.internal.domain.User
-import com.soruhavuzu.shared.IdGenerator
-import com.soruhavuzu.shared.RandomSource
-import com.soruhavuzu.shared.UserId
+import com.soruhavuzu.shared.logging.UserIdHasher
+import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.Clock
 
 /**
  * IdP kimliğini iç kullanıcıya çözer; yoksa oluşturur ve [UserRegistered] yayınlar (mimari.md §14, ADR 0018).
@@ -21,10 +18,11 @@ class ResolveUserUseCase(
     private val users: UserRepository,
     private val events: ApplicationEventPublisher,
     private val transactions: TransactionTemplate,
-    private val ids: IdGenerator,
-    private val random: RandomSource,
-    private val clock: Clock,
+    private val newUsers: NewUserFactory,
+    private val hasher: UserIdHasher,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     fun resolve(identity: ExternalIdentity): User = users.findByIdentity(identity) ?: registerWithRetry(identity)
 
     private fun registerWithRetry(identity: ExternalIdentity): User {
@@ -44,14 +42,14 @@ class ResolveUserUseCase(
     private fun register(identity: ExternalIdentity): User =
         checkNotNull(
             transactions.execute {
-                val user =
-                    User.register(
-                        id = UserId(ids.newId()),
-                        handle = Handle.generated(random.nextBytes(Handle.GENERATED_SUFFIX_LENGTH)),
-                        now = clock.instant(),
-                    )
+                val user = newUsers.create()
                 users.insert(user, identity)
                 events.publishEvent(UserRegistered(user.id))
+                log
+                    .atInfo()
+                    .addKeyValue("event", "user_registered")
+                    .addKeyValue("user", hasher.hash(user.id))
+                    .log("Yeni kullanıcı oluşturuldu")
                 user
             },
         )

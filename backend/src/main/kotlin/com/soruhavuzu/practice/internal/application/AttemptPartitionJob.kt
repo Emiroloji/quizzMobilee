@@ -24,7 +24,11 @@ class AttemptPartitionJob(
 
     fun ensurePartitions(): Int {
         val created = partitions.ensurePartitions(LocalDate.now(clock), properties.attemptPartitions.monthsAhead)
-        log.info("attempt_partitions_ensured created={}", created)
+        log
+            .atInfo()
+            .addKeyValue("event", "attempt_partitions_ensured")
+            .addKeyValue("created", created)
+            .log("Attempt partition'ları kontrol edildi")
         return created
     }
 }

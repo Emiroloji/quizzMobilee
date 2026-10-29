@@ -1,0 +1,51 @@
+# Lokal geliştirme altyapısı (mimari.md §17, ADR 0022). Değerler yalnızca lokal içindir; gizli bilgi değildir.
+name: soruhavuzu
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg17
+    environment:
+      POSTGRES_DB: soruhavuzu
+      POSTGRES_USER: soruhavuzu
+      POSTGRES_PASSWORD: soruhavuzu
+    ports: ["5432:5432"]
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soruhavuzu -d soruhavuzu"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
+    ports: ["8333:8333"]
+    volumes:
+      - s3-data:/data
+      - ./infra/local/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8333/status || exit 1"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Tek seferlik: medya bucket'ını oluşturur (varsa dokunmaz)
+  s3-init:
+    image: chrislusf/seaweedfs:4.48
+    depends_on:
+      s3: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        echo 's3.bucket.list' | weed shell -master=s3:9333 | grep -q 'soruhavuzu-media-local' ||
+        echo 's3.bucket.create -name soruhavuzu-media-local' | weed shell -master=s3:9333
+    restart: "no"
+
+  sqs:
+    image: softwaremill/elasticmq-native:1.7.1
+    ports: ["9324:9324"]
+    volumes: [./infra/local/elasticmq.conf:/opt/elasticmq.conf:ro]
+
+volumes:
+  postgres-data:
+  s3-data:

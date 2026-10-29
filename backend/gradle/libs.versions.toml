@@ -6,6 +6,7 @@ spring-dependency-management = "1.1.7"
 spring-modulith = "2.1.1"
 springdoc = "3.2.0"
 shedlock = "7.10.1"
+opentelemetry-javaagent = "2.32.0"
 kotest = "6.2.6"
 mockk = "1.14.11"
 springmockk = "5.0.1"
@@ -19,6 +20,7 @@ spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-b
 springdoc-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
 shedlock-jdbc = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+opentelemetry-javaagent = { module = "io.opentelemetry.javaagent:opentelemetry-javaagent", version.ref = "opentelemetry-javaagent" }
 kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest" }
 mockk = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }

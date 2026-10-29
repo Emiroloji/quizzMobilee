@@ -1,4 +1,11 @@
+logging:
+  structured:
+    format:
+      console: ""
+
 soruhavuzu:
+  logging:
+    user-id-hash-key: yerel-gelistirme-anahtari-gizli-degil
   web:
     allowed-origins: http://localhost:5173
   identity:
