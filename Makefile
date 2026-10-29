@@ -5,7 +5,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose
 GRADLE := cd backend && ./gradlew --console=plain
 
-.PHONY: help doctor install infra dev backend backend-otel admin mobile check test lint typecheck api down reset
+.PHONY: help doctor install infra dev backend backend-otel admin mobile check test lint typecheck api down reset logto-claims
 
 help: ## Komutları listeler
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-14s %s\n", $$1, $$2}'
@@ -60,3 +60,6 @@ down: ## Konteynerleri durdurur (veri kalır)
 
 reset: ## Konteynerleri ve lokal veriyi siler
 	$(COMPOSE) down -v
+
+logto-claims: ## Logto access token biçimini gösterir: make logto-claims ID=... SECRET=...
+	deploy/scripts/logto-token-claims.sh http://localhost:3001/oidc "$(ID)" "$(SECRET)" http://localhost:8080

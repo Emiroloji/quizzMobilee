@@ -41,3 +41,6 @@ ADR 0023 ile AWS kullanılmayacak, bu yüzden Cognito'nun yerine kendi sunucumuz
 - (−) Bir servis daha işletilecek (yaklaşık 512 MB).
 - (−) Access token claim'leri ilk deneme (spike) ile doğrulanmalı; plan bunu ilk görev olarak içerir.
 - (−) SMTP olmadan e-posta doğrulaması çalışmaz; beta'da SMTP sağlayıcısı gerekir.
+
+## Ek: Spike sonucu (2026-10-29, Logto 1.45.0)
+client_credentials ile alınan access token: alg=ES384 (typ=at+jwt), iss=http://localhost:3001/oidc, aud=http://localhost:8080, client_id=mevcut, token_use yok. Backend `jws-algorithms` varsayılanı buna göre ayarlandı.
