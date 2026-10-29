@@ -22,3 +22,6 @@ PostgreSQL'de partition'lı bir tablonun unique index'i partition anahtarını i
 ## Sonuçlar
 - (+) Idempotency veritabanı seviyesinde garanti edilir.
 - (−) Her attempt için bir ek satır yazılır. Sıcak yol iki INSERT olur (aynı transaction).
+
+## Ek (2026-10-29, Faz 0 code review)
+Birincil anahtar `(user_id, client_attempt_id)` olarak değiştirildi (`V202610291001`). `client_attempt_id` istemciden geldiği için, yalnızca ona göre tekillik bir kullanıcının başkasının anahtarını kullanarak onun cevabını engellemesine izin veriyordu.

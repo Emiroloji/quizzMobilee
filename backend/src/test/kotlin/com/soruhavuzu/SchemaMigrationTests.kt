@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataAccessException
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
 import java.util.UUID
@@ -65,18 +66,33 @@ class SchemaMigrationTests : IntegrationTest() {
     }
 
     @Test
-    fun `idempotency anahtarında UPDATE ve DELETE reddedilir, aynı anahtar ikinci kez yazılmaz`() {
+    fun `idempotency anahtarında UPDATE ve DELETE reddedilir, aynı kullanıcının anahtarı ikinci kez yazılmaz`() {
         val key = UUID.randomUUID()
-        val insert =
-            """
-            INSERT INTO practice.attempt_keys (client_attempt_id, user_id, attempt_id, created_at)
-            VALUES (?, ?, ?, now()) ON CONFLICT DO NOTHING
-            """.trimIndent()
-        jdbc.update(insert, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 1
-        jdbc.update(insert, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 0
+        val user = UUID.randomUUID()
+        jdbc.update(INSERT_ATTEMPT_KEY, key, user, UUID.randomUUID()) shouldBe 1
+        jdbc.update(INSERT_ATTEMPT_KEY, key, user, UUID.randomUUID()) shouldBe 0
         shouldThrow<DataAccessException> {
             jdbc.update("UPDATE practice.attempt_keys SET attempt_id = ? WHERE client_attempt_id = ?", UUID.randomUUID(), key)
         }.message shouldContain "IMMUTABLE_TABLE"
+    }
+
+    @Test
+    fun `başka kullanıcının idempotency anahtarı bir kullanıcının cevabını engelleyemez`() {
+        val key = UUID.randomUUID()
+        jdbc.update(INSERT_ATTEMPT_KEY, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 1
+        jdbc.update(INSERT_ATTEMPT_KEY, key, UUID.randomUUID(), UUID.randomUUID()) shouldBe 1
+    }
+
+    @Test
+    fun `referanssız itibar olayı aynı kullanıcıya iki kez yazılamaz`() {
+        val user = UUID.randomUUID()
+        val insert =
+            """
+            INSERT INTO reputation.reputation_events (id, user_id, kind, delta, ref_id, created_at)
+            VALUES (?, ?, 'WELCOME', 1, NULL, now())
+            """.trimIndent()
+        jdbc.update(insert, UUID.randomUUID(), user)
+        shouldThrow<DuplicateKeyException> { jdbc.update(insert, UUID.randomUUID(), user) }
     }
 
     @Test
@@ -178,6 +194,12 @@ class SchemaMigrationTests : IntegrationTest() {
     }
 
     private companion object {
+        val INSERT_ATTEMPT_KEY =
+            """
+            INSERT INTO practice.attempt_keys (client_attempt_id, user_id, attempt_id, created_at)
+            VALUES (?, ?, ?, now()) ON CONFLICT DO NOTHING
+            """.trimIndent()
+
         val IMMUTABLE_TABLES =
             listOf(
                 "content.question_versions",

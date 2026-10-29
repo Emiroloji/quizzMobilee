@@ -86,10 +86,11 @@ object ArchitectureRules {
             ).because("veritabanına yalnızca infrastructure katmanı erişir (kurallar.md A3, mimari.md §5.3)")
 
     /** A10: IdP token'ı (ve dolayısıyla `sub`) yalnızca identity modülünde görünür. */
-    val jwtOnlyInIdentity: ArchRule =
+    fun jwtOnlyInIdentity(basePackage: String): ArchRule =
         noClasses()
             .that()
-            .resideOutsideOfPackage("..identity..")
+            // "..identity.." kalıbı events.identity gibi paketleri de kapsardı; yalnızca modülün kendi paketi
+            .resideOutsideOfPackage("$basePackage.identity..")
             .should()
             .dependOnClassesThat()
             .belongToAnyOf(Jwt::class.java)
@@ -176,7 +177,7 @@ object ArchitectureRules {
         listOf(
             domainIsFrameworkFree,
             jdbcOnlyInInfrastructure,
-            jwtOnlyInIdentity,
+            jwtOnlyInIdentity(basePackage),
             preAuthorizeOnlyInWeb,
             controllersInWeb,
             noFieldInjection,

@@ -3,7 +3,6 @@ package com.soruhavuzu.architecture
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -46,7 +45,7 @@ class SourceLintTests {
 
     @Test
     fun `her migration yalnızca kendi modülünün şemasına başvurur`() {
-        migrationFiles.size shouldBe 11
+        migrationFiles.shouldNotBeEmpty()
         migrationFiles
             .flatMap { file ->
                 val module = MIGRATION_NAME.find(file.name)?.groupValues?.get(1) ?: error("Geçersiz migration adı: ${file.name}")

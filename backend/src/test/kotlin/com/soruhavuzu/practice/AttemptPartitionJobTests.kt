@@ -9,6 +9,7 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.ConnectionCallback
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Clock
 import java.time.Instant
@@ -40,6 +41,38 @@ class AttemptPartitionJobTests : IntegrationTest() {
         val job = jobAt("2033-03-01T00:00:00Z")
         job.ensurePartitions() shouldBe 3
         job.ensurePartitions() shouldBe 0
+    }
+
+    @Test
+    fun `partition sınırları oturumun saat diliminden bağımsız olarak UTC ay sınırlarıdır`() {
+        // Geliştirici makinesi UTC+3 olabilir; sınırlar yine de UTC gece yarısı olmalı
+        jdbc.execute(
+            ConnectionCallback { connection ->
+                connection.createStatement().use { statement ->
+                    statement.execute("SET TIME ZONE 'Europe/Istanbul'")
+                    statement.execute("SELECT practice.ensure_attempt_partitions(DATE '2045-07-01', 1)")
+                    statement.execute("RESET TIME ZONE")
+                }
+            },
+        )
+
+        partitionOf("2045-07-01T00:00:00Z") shouldBe "practice.attempts_y2045m07"
+        partitionOf("2045-07-31T23:59:59Z") shouldBe "practice.attempts_y2045m07"
+    }
+
+    private fun partitionOf(createdAt: String): String? {
+        jdbc.execute("SELECT practice.ensure_attempt_partitions(DATE '2045-06-01', 3)")
+        return jdbc.queryForObject(
+            """
+            INSERT INTO practice.attempts (id, client_attempt_id, user_id, question_id, version_id, session_type,
+              selected, is_correct, is_first, duration_ms, created_at)
+            VALUES (gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
+              'PRACTICE', '{"options":["A"]}', false, true, 3000, ?::timestamptz)
+            RETURNING tableoid::regclass::text
+            """.trimIndent(),
+            String::class.java,
+            createdAt,
+        )
     }
 
     @Test

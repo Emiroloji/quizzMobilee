@@ -4,7 +4,6 @@ import com.soruhavuzu.support.IntegrationTest
 import com.soruhavuzu.support.devToken
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -138,9 +137,11 @@ class MeEndpointTests : IntegrationTest() {
                 .andReturn()
                 .response
         response.status shouldBe 200
-        return com.jayway.jsonpath.JsonPath
-            .read<String>(response.contentAsString, "$.id")
-            .also { it shouldStartWith "" }
+        val id =
+            com.jayway.jsonpath.JsonPath
+                .read<String>(response.contentAsString, "$.id")
+        UUID.fromString(id).version() shouldBe 7 // kimlikler UUIDv7 (ADR 0011)
+        return id
     }
 
     private companion object {

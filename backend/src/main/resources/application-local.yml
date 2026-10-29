@@ -5,6 +5,12 @@ spring:
     username: soruhavuzu
     password: soruhavuzu
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+
 logging:
   structured:
     format:

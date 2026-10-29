@@ -30,7 +30,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,modulith
+        # modulith (modül yapısı) yalnızca local profilde açılır
+        include: health,info
 
 springdoc:
   default-produces-media-type: application/json

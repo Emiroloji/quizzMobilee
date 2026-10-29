@@ -37,11 +37,18 @@ class ArchitectureTests {
             .message shouldContain "AlphaSecret"
     }
 
+    @Test
+    fun `Jwt kuralı adında identity geçen başka paketi identity modülü saymaz`() {
+        val classes = ClassFileImporter().importPackages("archfixture.jwt")
+        shouldThrow<AssertionError> { ArchitectureRules.jwtOnlyInIdentity("archfixture.jwt").check(classes) }
+            .message shouldContain "JwtLeak"
+    }
+
     private fun fixtureRules(): List<ArchRule> =
         listOf(
             ArchitectureRules.domainIsFrameworkFree,
             ArchitectureRules.jdbcOnlyInInfrastructure,
-            ArchitectureRules.jwtOnlyInIdentity,
+            ArchitectureRules.jwtOnlyInIdentity(FIXTURE),
             ArchitectureRules.preAuthorizeOnlyInWeb,
             ArchitectureRules.controllersInWeb,
             ArchitectureRules.noFieldInjection,

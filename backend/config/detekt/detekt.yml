@@ -7,6 +7,8 @@ style:
         reason: 'Zaman yalnızca Instant ile temsil edilir (kurallar.md §3.1).'
       - value: 'org.springframework.beans.factory.annotation.Autowired'
         reason: 'Yalnızca constructor injection (kurallar.md §3.1).'
+      - value: 'kotlin.random.Random'
+        reason: 'Rastgelelik RandomSource portundan alınır (kurallar.md §3.1).'
     excludes: ['**/test/**']
   ForbiddenMethodCall:
     active: true
@@ -15,6 +17,18 @@ style:
         reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
       - value: 'java.util.UUID.randomUUID'
         reason: 'Kimlikler IdGenerator (UUIDv7) ile üretilir (ADR 0011).'
+      - value: 'java.time.LocalDate.now()'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır: LocalDate.now(clock) (kurallar.md §3.1).'
+      - value: 'java.time.LocalTime.now()'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
+      - value: 'java.time.OffsetDateTime.now()'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
+      - value: 'java.time.ZonedDateTime.now()'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
+      - value: 'java.lang.System.currentTimeMillis'
+        reason: 'Zaman enjekte edilen Clock üzerinden alınır (kurallar.md §3.1).'
+      - value: 'java.lang.Math.random'
+        reason: 'Rastgelelik RandomSource portundan alınır (kurallar.md §3.1).'
     excludes: ['**/test/**']
   MagicNumber:
     excludes: ['**/test/**']

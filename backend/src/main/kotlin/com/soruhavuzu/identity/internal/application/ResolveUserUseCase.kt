@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
+import java.sql.SQLException
 
 /**
  * IdP kimliğini iç kullanıcıya çözer; yoksa oluşturur ve [UserRegistered] yayınlar (mimari.md §14, ADR 0018).
@@ -26,17 +27,18 @@ class ResolveUserUseCase(
     fun resolve(identity: ExternalIdentity): User = users.findByIdentity(identity) ?: registerWithRetry(identity)
 
     private fun registerWithRetry(identity: ExternalIdentity): User {
-        var lastConflict: DuplicateKeyException? = null
+        var lastSqlState: String? = null
         repeat(MAX_ATTEMPTS) {
             try {
                 return register(identity)
             } catch (e: DuplicateKeyException) {
                 // Ya başka bir istek aynı kişiyi az önce oluşturdu ya da üretilen takma ad çakıştı
-                lastConflict = e
+                lastSqlState = (e.cause as? SQLException)?.sqlState
                 users.findByIdentity(identity)?.let { return it }
             }
         }
-        throw IllegalStateException("Kullanıcı $MAX_ATTEMPTS denemede oluşturulamadı", lastConflict)
+        // Veritabanı hata mesajı anahtar değerlerini (IdP sub) içerir; log'a taşınmasın diye yalnızca SQLState
+        error("Kullanıcı $MAX_ATTEMPTS denemede oluşturulamadı (SQLState=$lastSqlState)")
     }
 
     private fun register(identity: ExternalIdentity): User =
