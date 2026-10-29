@@ -1,7 +1,7 @@
 # ADR 0010 — Medya işleme Lambda'da, S3 pre-signed yükleme
 
 - **Tarih:** 2026-10-28
-- **Durum:** Kabul
+- **Durum:** Kısmen yerini aldı: 0023 (presigned yükleme korunur; Lambda/Rekognition/CloudFront kaldırıldı)
 
 ## Bağlam
 Görseller EXIF'ten temizlenmeli, küçültülmeli, pHash'lenmeli ve uygunsuz içerik açısından denetlenmeli. Bu iş API sürecini meşgul etmemeli.

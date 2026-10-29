@@ -1,7 +1,7 @@
 # ADR 0018 — Cognito access token doğrulaması ve ilk istekte kullanıcı oluşturma
 
 - **Tarih:** 2026-10-28
-- **Durum:** Kabul
+- **Durum:** Kısmen yerini aldı: 0024 (Cognito'ya özel token kuralları; ilk istekte kullanıcı oluşturma ve DB rolü geçerli)
 
 ## Bağlam
 mimari.md §14, JWT'nin "issuer + audience + imza" ile doğrulanmasını ve ilk istekte iç kullanıcının oluşturulmasını istiyor. Cognito'da iki tür token var:

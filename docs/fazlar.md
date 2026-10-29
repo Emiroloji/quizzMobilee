@@ -1,8 +1,8 @@
 # fazlar.md — Geliştirme Fazları
 
-> Bu dosya onaylı v1.0 metnidir (NotebookLM kaynağından aktarıldı). Sonradan kabul edilen kararlar docs/adr/0013 ve sonrasındadır; çelişki halinde ADR geçerlidir.
+> v1.0 NotebookLM'deki onaylı metinden aktarıldı. v1.1, Faz 0 ilerlemesini ve ADR 0022–0024'ü (lokal S3/SQS, tek sunucu, Logto) işler (en alttaki Değişiklik Kaydı). Çelişki halinde ADR geçerlidir.
 
-**Durum:** Onaylı · **Sürüm:** 1.0 · **Tarih:** 2026-10-28
+**Durum:** Onaylı · **Sürüm:** 1.1 · **Tarih:** 2026-10-29
 
 Fazlar **sıralıdır**. Bir faz, kabul kriterlerinin tamamı sağlanmadan kapanmaz ve sonraki faz başlamaz (`kurallar.md §13.2`).
 
@@ -14,7 +14,7 @@ Süreler tek kişi, yarı zamanlı çalışma için tahmindir.
 
 | Faz | Ad | Süre | Çıktı | Durum |
 | --- | --- | --- | --- | --- |
-| 0 | Temel | 2 hafta | Çalışan iskelet, şema, CI/CD, altyapı | ⬜ |
+| 0 | Temel | 2 hafta | Çalışan iskelet, şema, CI/CD, altyapı | 🟨 |
 | 1 | İçerik | 3 hafta | Soru yükleme uçtan uca | ⬜ |
 | 2 | Çözme + Kalibrasyon | 3 hafta | Zorluk seçip çözme, Elo, yanlışlarım/favoriler | ⬜ |
 | 3 | Güven | 2 hafta | Moderasyon, itibar, şikayet, duplicate, telif filtresi | ⬜ |
@@ -34,53 +34,53 @@ Durum işaretleri: ⬜ başlamadı · 🟨 sürüyor · ✅ tamamlandı
 
 **Repo ve dokümanlar**
 
-- [ ] Monorepo yapısı (`mimari.md §4`), pnpm workspace, Gradle multi-project gerekmez (tek backend modülü)
-- [ ] `docs/` altına dört doküman + `docs/adr/0001…0012` (`mimari.md §21`)
-- [ ] README: lokal kurulum tek komut (`make dev` veya `pnpm dev:all`)
+- [x] Monorepo yapısı (`mimari.md §4`), pnpm workspace, Gradle multi-project gerekmez (tek backend modülü)
+- [x] `docs/` altına dört doküman + `docs/adr/0001…0012` (`mimari.md §21`) — v1.1 itibarıyla ADR 0001–0024
+- [x] README: lokal kurulum tek komut (`make dev` veya `pnpm dev:all`)
 
 **Backend**
 
-- [ ] Spring Boot 4 + Kotlin + Spring Modulith iskeleti; tüm modül paketleri boş `Api` ve `@ApplicationModule` ile
-- [ ] `shared`: ID value class'ları, `Clock`/`RandomSource` portları, problem+json hata işleyici, cursor sayfalama
-- [ ] `ModularityTests` (Modulith `verify()`) + ArchUnit kuralları (`kurallar.md §2`)
-- [ ] detekt + ktlint konfigürasyonu (`!!`, `LocalDateTime`, `Instant.now()` yasakları)
-- [ ] Flyway: tüm şemalar ve `mimari.md §6`'daki **tüm tablolar** (v2 tabloları dahil)
-- [ ] Değişmez tablolar için UPDATE/DELETE engelleyen DB trigger'ları
-- [ ] `attempts` partition'ları + aylık partition oluşturan zamanlanmış iş
-- [ ] Spring Security resource server; `local` profilde sahte JWT üretici
-- [ ] `identity`: ilk istekte kullanıcı oluşturma, `GET /me`
-- [ ] Event Publication Registry kurulumu
-- [ ] springdoc → OpenAPI; `packages/api-client` üretimi
-- [ ] OpenTelemetry agent + JSON log
-- [ ] Testcontainers tabanlı entegrasyon test altyapısı
+- [x] Spring Boot 4 + Kotlin + Spring Modulith iskeleti; tüm modül paketleri boş `Api` ve `@ApplicationModule` ile
+- [x] `shared`: ID value class'ları, `Clock`/`RandomSource` portları, problem+json hata işleyici, cursor sayfalama
+- [x] `ModularityTests` (Modulith `verify()`) + ArchUnit kuralları (`kurallar.md §2`)
+- [x] detekt + ktlint konfigürasyonu (`!!`, `LocalDateTime`, `Instant.now()` yasakları)
+- [x] Flyway: tüm şemalar ve `mimari.md §6`'daki **tüm tablolar** (v2 tabloları dahil)
+- [x] Değişmez tablolar için UPDATE/DELETE engelleyen DB trigger'ları
+- [x] `attempts` partition'ları + aylık partition oluşturan zamanlanmış iş
+- [x] Spring Security resource server; `local` profilde sahte JWT üretici
+- [x] `identity`: ilk istekte kullanıcı oluşturma, `GET /me`
+- [x] Event Publication Registry kurulumu
+- [x] springdoc → OpenAPI; `packages/api-client` üretimi
+- [x] OpenTelemetry agent + JSON log
+- [x] Testcontainers tabanlı entegrasyon test altyapısı
 
 **Paylaşılan paketler**
 
-- [ ] `content-schema`: JSON Schema v1, zod türetimi, KaTeX allowlist, `toPlainText()`, `renderHtml()`
+- [x] `content-schema`: JSON Schema v1, zod türetimi, KaTeX allowlist, `toPlainText()`, `renderHtml()` — yön: zod → schema.json (ADR 0019)
 
 **Mobil / Admin**
 
-- [ ] Expo + expo-router + TS strict + eslint (boundaries, i18n) iskeleti
-- [ ] `shared/api`, `shared/i18n`, `shared/ui` temel bileşenler, tema
-- [ ] `QuestionBody` bileşeni: gömülü KaTeX ile örnek blok-JSON render (offline)
-- [ ] Cognito girişi (Apple, Google, e-posta) → `GET /me`
-- [ ] Admin: Vite + React iskeleti, giriş, `renderHtml` ile önizleme
+- [x] Expo + expo-router + TS strict + eslint (boundaries, i18n) iskeleti — feature izolasyonu `no-restricted-imports` ile (ADR 0021)
+- [x] `shared/api`, `shared/i18n`, `shared/ui` temel bileşenler, tema
+- [x] `QuestionBody` bileşeni: gömülü KaTeX ile örnek blok-JSON render (offline) — cihaz doğrulaması kabul kriterinde
+- [ ] Logto girişi (e-posta; alan adıyla Apple, Google) → `GET /me` (ADR 0024; `dev` modunda uçtan uca doğrulandı)
+- [x] Admin: Vite + React iskeleti, giriş, `renderHtml` ile önizleme
 
 **Altyapı**
 
-- [ ] docker-compose: Postgres (+pgvector, ltree) + LocalStack
-- [ ] CDK: VPC (NAT'sız), RDS, ECS Fargate + ALB, S3 (uploads/public), CloudFront OAC, SQS ×2, Cognito (Lite), Secrets Manager, VPC endpoint'ler — `staging` ve `prod`
-- [ ] GitHub Actions: lint → test → mimari testler → OpenAPI farkı → gitleaks → Docker → ECR → ECS (staging)
+- [x] docker-compose: Postgres (+pgvector, ltree) + SeaweedFS (S3) + ElasticMQ (SQS) — LocalStack yerine (ADR 0022)
+- [ ] Tek sunucu (Dokploy, ADR 0023): Postgres, API, Logto, SeaweedFS, ElasticMQ, admin; Traefik + TLS; servis başına bellek sınırı; günlük DB yedeği — `beta`
+- [ ] GitHub Actions: lint → test → mimari testler → OpenAPI farkı → gitleaks → çok mimarili imaj → GHCR → Dokploy (beta)
 - [ ] EAS Build profilleri (development, preview, production)
 
 ### Kabul Kriterleri
 
 - [ ] Temiz makinede README adımlarıyla lokal ortam ≤ 15 dk'da ayağa kalkar
-- [ ] Mobil uygulama staging'e giriş yapar ve `GET /me` sonucunu gösterir
+- [ ] Mobil uygulama `beta`'ya giriş yapar ve `GET /me` sonucunu gösterir
 - [ ] `QuestionBody` örnek integral/kesir/limit içeren soruyu iOS ve Android'de offline doğru render eder
 - [ ] CI'da mimari testler, başka modülün `internal` paketine kasıtlı erişimde **kırılır** (negatif test)
-- [ ] Değişmez tabloya UPDATE denemesi DB seviyesinde reddedilir
-- [ ] `main`'e merge staging'e otomatik deploy olur
+- [x] Değişmez tabloya UPDATE denemesi DB seviyesinde reddedilir
+- [ ] `main`'e merge `beta`'ya otomatik deploy olur
 
 ---
 
@@ -268,3 +268,4 @@ Kapsam dışı (`proje.md §6.4`): gerçek zamanlı düello, sohbet, sosyal akı
 | Sürüm | Tarih | Değişiklik |
 | --- | --- | --- |
 | 1.0 | 2026-10-28 | İlk sürüm |
+| 1.1 | 2026-10-29 | Faz 0 ilerlemesi işaretlendi; altyapı maddeleri tek sunucu/Dokploy (ADR 0023), Logto (ADR 0024), lokal S3/SQS (ADR 0022) ile güncellendi; staging → `beta` |

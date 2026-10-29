@@ -1,7 +1,7 @@
 # ADR 0021 — Mobil ve admin araç zinciri seçimleri
 
 - **Tarih:** 2026-10-28
-- **Durum:** Kabul
+- **Durum:** Kabul (madde 7'deki Cognito istemcileri 0024 ile Logto oldu)
 
 ## Bağlam
 Faz 0'da mobil (Expo) ve admin (Vite) iskeletleri kuruldu. mimari.md §2'deki yığın genel çerçeveyi veriyor. Sürüm ve araç seçimleri ADR 0020 (en az 14 günlük sürümler) ve "sıkıcı teknoloji" ilkesiyle yapıldı.

@@ -1,7 +1,7 @@
 # ADR 0009 — Cognito Lite + IdP'den bağımsız iç kullanıcı kimliği
 
 - **Tarih:** 2026-10-28
-- **Durum:** Kabul
+- **Durum:** Yerini aldı: 0024 (Cognito → Logto; iç kimlik ilkesi korunur)
 
 ## Bağlam
 Apple (iOS'ta zorunlu), Google ve e-posta girişi gerekiyor. Kimlik sağlayıcı ileride değişebilir.

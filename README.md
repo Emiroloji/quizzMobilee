@@ -74,11 +74,12 @@ docs/                 proje, mimari, kurallar, fazlar, ADR'ler
 backend/              Kotlin + Spring Boot 4 + Spring Modulith (soruhavuzu-api)
 mobile/               React Native + Expo (SDK 57)
 admin/                React + Vite moderasyon paneli
-lambdas/              media-processor (Node/TS) — Faz 1
+workers/              media-processor (Node/TS) — Faz 1
 packages/
   content-schema/     blok-JSON şeması (zod → schema.json), KaTeX allowlist, render
   api-client/         OpenAPI'den üretilen TS istemci (elle düzenlenmez)
-infra/                AWS CDK (TS) ve lokal altyapı yapılandırmaları
+deploy/               Dokploy dağıtım tanımları ve runbook (ADR 0023)
+infra/local/          lokal docker-compose yapılandırmaları
 ```
 
 ## Kalite kontrolleri

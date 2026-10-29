@@ -1,8 +1,8 @@
 # proje.md — Ürün Tanımı
 
-> Bu dosya onaylı v1.0 metnidir (NotebookLM kaynağından aktarıldı). Sonradan kabul edilen kararlar docs/adr/0013 ve sonrasındadır; çelişki halinde ADR geçerlidir.
+> v1.0 NotebookLM'deki onaylı metinden aktarıldı. v1.1, ADR 0023–0024 (tek sunucu, Logto) kararlarını işler (en alttaki Değişiklik Kaydı). Çelişki halinde ADR geçerlidir.
 
-**Durum:** Onaylı · **Sürüm:** 1.0 · **Tarih:** 2026-10-28
+**Durum:** Onaylı · **Sürüm:** 1.1 · **Tarih:** 2026-10-29
 
 Bu dosya ürünün **ne** olduğunu ve **neden** öyle olduğunu tanımlar. Teknik **nasıl** için `mimari.md`, uyulacak kurallar için `kurallar.md`, sıralama için `fazlar.md`.
 
@@ -186,7 +186,7 @@ Formüller ve parametreler: `mimari.md §8`.
 | ÖSYM soruları | **Yasak.** Kullanım şartlarında açıkça yazar. Yükleme anında özgünlük beyanı alınır. Otomatik filtre (filigran metni + benzerlik) v1'de vardır. Telif şikayetleri öncelikli kuyruktadır. |
 | Yayınevi soruları | ÖSYM ile aynı kural. |
 | Yer sağlayıcı statüsü | 5651 kapsamında hızlı kaldırma süreci işletilir, kaldırma kayıtları saklanır. |
-| KVKK yurt dışı aktarım | AWS bölgesi Türkiye dışında olduğu için Kurul standart sözleşmesi imzalanır ve 5 iş günü içinde bildirilir. Aydınlatma metninde açıkça yazar. |
+| KVKK yurt dışı aktarım | Veri Türkiye'deki sunucuda tutulur (ADR 0023); yurt dışı aktarım yapılmaz, Kurul standart sözleşmesi/bildirimi gerekmez. Aydınlatma metninde veri işleme yeri açıkça yazar. Yurt dışında bir hizmet (ör. Expo Push, ileride CDN) kişisel veri işlerse o anda yeniden değerlendirilir. |
 | 18 yaş altı | Doğum yılı alınır. 18 altı için pazarlama/profilleme kapalıdır. Ad-soyad zorunlu değildir; takma ad yeterlidir. |
 | Veri minimizasyonu | Görsellerden EXIF silinir. Loglarda kişisel veri tutulmaz. |
 | Haklar | Uygulama içinden hesap silme ve veri indirme. |
@@ -222,3 +222,12 @@ Yayına çıkmadan önce kullanım şartları, aydınlatma metni ve kaldırma s�
 - `kurallar.md` — kodlama, mimari ve süreç kuralları
 - `fazlar.md` — geliştirme fazları ve kabul kriterleri
 - `docs/adr/` — mimari karar kayıtları
+
+---
+
+## Değişiklik Kaydı
+
+| Sürüm | Tarih | Değişiklik |
+| --- | --- | --- |
+| 1.0 | 2026-10-28 | İlk sürüm |
+| 1.1 | 2026-10-29 | §10 KVKK: veri Türkiye'deki sunucuda, yurt dışı aktarım yok (ADR 0023) |

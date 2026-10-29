@@ -1,8 +1,8 @@
 # kurallar.md — Proje Kuralları
 
-> Bu dosya onaylı v1.0 metnidir (NotebookLM kaynağından aktarıldı). Sonradan kabul edilen kararlar docs/adr/0013 ve sonrasındadır; çelişki halinde ADR geçerlidir.
+> v1.0 NotebookLM'deki onaylı metinden aktarıldı. v1.1, ADR 0023 (tek sunucu) kararını işler (en alttaki Değişiklik Kaydı). Çelişki halinde ADR geçerlidir.
 
-**Durum:** Onaylı · **Sürüm:** 1.0 · **Tarih:** 2026-10-28
+**Durum:** Onaylı · **Sürüm:** 1.1 · **Tarih:** 2026-10-29
 
 Kurallar bağlayıcıdır. "MUST" = istisnasız, "SHOULD" = gerekçesi PR'da yazılmadan çiğnenmez.
 
@@ -150,12 +150,12 @@ Bir kural CI ile otomatik kontrol ediliyorsa yanında **[CI]** yazar.
 4. PR ≤ ~400 satır değişiklik (üretilen kod hariç). Büyük iş parçalara bölünür.
 5. PR açıklaması: ne, neden, nasıl test edildi, ilgili faz maddesi, ADR (varsa), ekran görüntüsü (UI ise).
 6. Sürümleme: backend ve mobil SemVer. Mobil sürümler EAS ile, OTA güncelleme yalnızca JS değişikliğinde.
-7. `main`'e merge → otomatik `staging` deploy. `prod` deploy elle onaylı, tag ile.
+7. `main`'e merge → otomatik `beta` deploy (tek sunucu, `staging` profili). `prod` deploy elle onaylı, tag ile (prod sunucusu belirlenince).
 8. Gizli bilgi commit edilirse: anahtar derhal döndürülür, geçmiş temizlenir, olay kaydı yazılır. **[CI]** gitleaks
 
 ## 9. Güvenlik Kuralları
 
-1. Gizli bilgi yalnızca Secrets Manager'da; kodda, repoda, logda, hata mesajında yok.
+1. Gizli bilgi yalnızca dağıtım platformunun gizli değişkenlerinde (Dokploy); kodda, repoda, logda, hata mesajında yok.
 2. Her uç nokta varsayılan olarak kimlik doğrulama ister; anonim uç nokta açıkça işaretlenir.
 3. Sahiplik/yetki kontrolü use-case içinde yapılır; istemciden gelen `userId`'ye güvenilmez, token'dan alınır.
 4. Kullanıcı girdisi her sınırda doğrulanır; içerik JSON Schema + KaTeX allowlist'ten geçmeden saklanmaz.
@@ -196,7 +196,7 @@ Her yeni özellik PR'ında işaretlenir:
 ## 12. Definition of Done (her iş için)
 
 - Kod `main`'de, CI yeşil (lint, detekt, test, Modulith/ArchUnit, OpenAPI farkı, gitleaks).
-- `staging`'e deploy edildi ve el ile doğrulandı.
+- `beta`'ya deploy edildi ve el ile doğrulandı.
 - Yeni davranışın testi var.
 - İlgili doküman güncel.
 - Bilinen eksik/teknik borç varsa GitHub Issue olarak açıldı ve PR'a bağlandı.
@@ -220,3 +220,4 @@ Bu repoda kod üreten her AI asistanı (Claude Code vb.) için:
 | Sürüm | Tarih | Değişiklik |
 | --- | --- | --- |
 | 1.0 | 2026-10-28 | İlk sürüm |
+| 1.1 | 2026-10-29 | §8 deploy hedefi `beta` (tek sunucu), §9 sırlar Dokploy'da, DoD `beta` (ADR 0023) |

@@ -1,7 +1,7 @@
 # ADR 0022 — Lokal S3/SQS: LocalStack yerine SeaweedFS + ElasticMQ
 
 - **Tarih:** 2026-10-29
-- **Durum:** Kabul
+- **Durum:** Kabul (kapsamı 0023 ile beta sunucusuna genişledi)
 
 ## Bağlam
 mimari.md §17 ve fazlar.md Faz 0, lokal geliştirme için "docker-compose ile Postgres + LocalStack (S3/SQS)" öngörüyor. Faz 0'da doğrulandı: `localstack/localstack` imajı (2026.x) artık **auth token olmadan açılmıyor**: "License activation failed … set the LOCALSTACK_AUTH_TOKEN". Bu durumda:

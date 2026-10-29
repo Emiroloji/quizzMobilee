@@ -2,8 +2,7 @@ packages:
   - packages/*
   - mobile
   - admin
-  - lambdas/*
-  - infra
+  - workers/*
 
 # ADR 0020: yalnızca en az 14 günlük (20160 dk) sürümler çözülür; araçla zorlanır
 minimumReleaseAge: 20160

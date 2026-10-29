@@ -1,8 +1,8 @@
 # mimari.md — Teknik Mimari
 
-> Bu dosya onaylı v1.0 metnidir (NotebookLM kaynağından aktarıldı). Sonradan kabul edilen kararlar docs/adr/0013 ve sonrasındadır; çelişki halinde ADR geçerlidir.
+> v1.0 NotebookLM'deki onaylı metinden aktarıldı. v1.1, ADR 0013–0024'ü işler (en alttaki Değişiklik Kaydı). Çelişki halinde ADR geçerlidir.
 
-**Durum:** Onaylı · **Sürüm:** 1.0 · **Tarih:** 2026-10-28
+**Durum:** Onaylı · **Sürüm:** 1.1 · **Tarih:** 2026-10-29
 
 Bu dosya sistemin **nasıl** kurulduğunu tanımlar. Buradaki kararlar ancak `docs/adr/` altında yeni bir ADR ile değişir (`kurallar.md §1`).
 
@@ -28,28 +28,28 @@ Bu dosya sistemin **nasıl** kurulduğunu tanımlar. Buradaki kararlar ancak `do
 | Mobil yerel durum | Zustand | Minimal |
 | Mobil offline DB | expo-sqlite + Drizzle | Tipli, migration'lı |
 | Formlar | react-hook-form + zod | Şema tabanlı doğrulama |
-| Matematik render | KaTeX (uygulamaya gömülü), tek WebView bileşeni | Olgun, offline çalışır |
+| Matematik render | KaTeX (uygulamaya gömülü), tek WebView bileşeni; fontları gömülü bağımsız belge (`renderDocument`) | Olgun, offline çalışır |
 | Admin paneli | React + Vite + TypeScript | Aynı tipler ve render paketi |
 | Backend dili | **Kotlin 2.x** (JVM, Java 25 LTS) | Mevcut Java/Kotlin bilgisi, null-safety |
 | Backend çatı | **Spring Boot 4.x** + **Spring Modulith 2.x** | Modül sınırı doğrulama, olay kaydı |
 | Web | Spring MVC + virtual threads | Basit, bloklayan model; reaktif karmaşıklık yok |
 | Kalıcılık | Spring Data JDBC + JdbcClient | Aggregate odaklı, lazy-loading sürprizi yok, SQL görünür |
 | Migration | Flyway | Sürümlü, tekrar edilebilir |
-| Veritabanı | PostgreSQL 17+ (AWS RDS) + `pgvector`, `ltree` | Tek veritabanı, şema başına modül |
+| Veritabanı | PostgreSQL 17+ (Dokploy, `pgvector/pgvector` imajı) + `pgvector`, `ltree` | Tek veritabanı, şema başına modül; altyapı tabloları `platform` şemasında (ADR 0014) |
 | Rate limit | Bucket4j (v1: PostgreSQL backend, sonra Redis) | Port arkasında; backend değişimi kodu etkilemez |
 | Zamanlanmış işler | Spring `@Scheduled` + ShedLock | Çoklu instance'ta tek çalışma |
-| Kimlik | AWS Cognito (**Lite** plan) | Apple/Google/e-posta; 10k MAU ücretsiz |
-| Dosya | S3 + CloudFront (OAC) | Pre-signed yükleme, CDN okuma |
-| Asenkron medya işleme | S3 event → SQS → Lambda (Node/TS) | Görsel küçültme, EXIF, pHash, Rekognition |
-| Görsel moderasyon | Amazon Rekognition `DetectModerationLabels` | Düşük maliyet |
-| Embedding (v2) | Amazon Bedrock Titan Text Embeddings V2 (512 boyut) | `EmbeddingPort` arkasında |
-| Gizli bilgi | AWS Secrets Manager | DB parolası, üçüncü taraf anahtarları |
+| Kimlik | **Logto** (self-hosted OIDC, MPL-2.0) | E-posta; alan adıyla Apple/Google; hazır giriş ekranları (ADR 0024) |
+| Dosya | S3 uyumlu depolama: SeaweedFS | Pre-signed yükleme; lokal ve sunucuda aynı bileşen (ADR 0022, 0023) |
+| Asenkron medya işleme | SQS uyumlu kuyruk (ElasticMQ) → medya worker konteyneri (Node/TS) | Görsel küçültme, EXIF, pHash; olay köprüsü Faz 1'de kararlaştırılır |
+| Görsel moderasyon | Faz 1 kararı (Rekognition kullanılmaz); o zamana kadar yeni yükleyenler `IN_REVIEW` ile insan onayından geçer | AWS yok (ADR 0023) |
+| Embedding (v2) | `EmbeddingPort` arkasında; sağlayıcı v2'de seçilir (512 boyut), ayrı tabloda (ADR 0016) | Sağlayıcıdan bağımsız |
+| Gizli bilgi | Dokploy ortam değişkenleri | DB parolası, log anahtarı, üçüncü taraf anahtarları; repoda değer yok |
 | Push | Expo Push Service | APNs/FCM soyutlaması |
-| Çalışma ortamı | ECS Fargate + ALB | Sunucu yönetimi yok |
-| IaC | AWS CDK (TypeScript) | Tek dil (TS) altyapı + istemci |
-| CI/CD | GitHub Actions → ECR → ECS; EAS Build (mobil) | |
-| Gözlemlenebilirlik | OpenTelemetry Java agent → CloudWatch/X-Ray; yapılandırılmış JSON log | |
-| Bölge | `eu-central-1` (Frankfurt) | Türkiye'ye yakın, tüm servisler mevcut |
+| Çalışma ortamı | Tek VPS (Türkiye, 5 GB RAM) + Dokploy (Docker + Traefik) | Maliyet yok, veri Türkiye'de (ADR 0023) |
+| Dağıtım tanımı | `deploy/` (Dokploy compose dosyaları + runbook) | Sürümlü, tekrar edilebilir |
+| CI/CD | GitHub Actions → GHCR (amd64 + arm64) → Dokploy deploy webhook; EAS Build (mobil) | İmaj CI'da derlenir, sunucuda derleme yok |
+| Gözlemlenebilirlik | Yapılandırılmış JSON log (Dokploy log görüntüleyici); OpenTelemetry Java agent (traceId loglarda, dışa aktarım beta'da kapalı) | |
+| Konum | Türkiye (VPS) | KVKK: veri yurt içinde |
 
 Kesin sürümler Faz 0'da kilitlenir: backend `gradle/libs.versions.toml`, frontend `package.json` + `pnpm-lock.yaml`.
 
@@ -59,25 +59,23 @@ Kesin sürümler Faz 0'da kilitlenir: backend `gradle/libs.versions.toml`, front
 ┌──────────────┐        ┌───────────────┐
 │ Mobil (Expo) │        │ Admin (Vite)  │
 └──────┬───────┘        └──────┬────────┘
-       │ HTTPS + JWT (Cognito) │
+       │ HTTPS + JWT (Logto)   │
        ▼                       ▼
-   ┌───────────────────────────────┐          ┌──────────────┐
-   │  ALB → ECS Fargate            │◀────────▶│ RDS Postgres │
-   │  soruhavuzu-api (Modulith)    │          │ (+pgvector)  │
-   └───────┬───────────────▲───────┘          └──────────────┘
-           │ pre-signed    │ SQS: media-results
-           ▼ PUT URL       │
-   ┌──────────────┐  event ┌─────────┐   ┌──────────────────────────┐
-   │ S3 uploads/  │───────▶│ SQS     │──▶│ Lambda: media-processor  │
-   └──────────────┘        │ media-in│   │ resize·EXIF·pHash·Rekog. │
-                           └─────────┘   └──────────┬───────────────┘
-   ┌──────────────┐                                 │ kopyalar
-   │ S3 public/   │◀────────────────────────────────┘
-   └──────┬───────┘
-          ▼
-     CloudFront (OAC) ──▶ istemciler görselleri buradan okur
-
-Cognito (kimlik) · Secrets Manager · CloudWatch/X-Ray · Expo Push
+┌─────────────────────────── VPS (Türkiye) · Dokploy ───────────────────────────┐
+│  Traefik (TLS, Let's Encrypt) ── api. / admin. / auth. / media. <host>         │
+│        │                                                                        │
+│  ┌─────▼─────────────────────────┐     ┌──────────────────────────────┐        │
+│  │ soruhavuzu-api (Modulith)     │◀───▶│ Postgres 17 (+pgvector)      │        │
+│  └───┬──────────────────▲────────┘     │ db: soruhavuzu · db: logto   │        │
+│      │ pre-signed       │ media-results└──────────────▲───────────────┘        │
+│      ▼ PUT URL          │                             │                        │
+│  ┌──────────────┐  ┌────┴─────────┐  ┌────────────────┴───────┐               │
+│  │ SeaweedFS S3 │  │ ElasticMQ    │─▶│ medya worker (Faz 1)   │               │
+│  │ uploads/     │  │ media-in /   │  │ resize·EXIF·pHash      │               │
+│  │ public/      │◀─┤ media-results│  └────────────────────────┘               │
+│  └──────────────┘  └──────────────┘   Logto (kimlik) · Admin (statik nginx)   │
+└────────────────────────────────────────────────────────────────────────────────┘
+                        Expo Push (dış servis)
 ```
 
 ## 4. Repo Yapısı (monorepo)
@@ -90,12 +88,13 @@ soruhavuzu/
 ├── backend/                      # Kotlin, Gradle
 ├── mobile/                       # Expo
 ├── admin/                        # React + Vite
-├── lambdas/
-│   └── media-processor/          # Node/TS
+├── workers/
+│   └── media-processor/          # Node/TS (Faz 1)
 ├── packages/                     # pnpm workspace paketleri
 │   ├── content-schema/           # Blok-JSON JSON Schema + zod + KaTeX makro listesi + HTML render
 │   └── api-client/               # OpenAPI'den üretilen TS istemci (elle düzenlenmez)
-├── infra/                        # AWS CDK (TS)
+├── deploy/                       # Dokploy compose dosyaları + runbook (ADR 0023)
+├── infra/local/                  # lokal docker-compose yapılandırmaları
 ├── .github/workflows/
 └── README.md
 ```
@@ -104,9 +103,13 @@ soruhavuzu/
 
 ### 5.1 Modül Listesi
 
+> v1.1: `events` modülü (ADR 0013) ve `platform` şeması (ADR 0014) eklendi.
+
 | Modül | Şema | Sorumluluk | Sahip olduğu veri |
 | --- | --- | --- | --- |
 | `shared` | — | Ortak çekirdek: ID tipleri, `Clock`, hata tipleri, sayfalama. **İş mantığı yok.** | — |
+| `events` | — | Modüller arası olay sözleşmeleri (`events.<sahip-modül>`); yalnızca sahibi yayınlar (ADR 0013) | — |
+| — | `platform` | Altyapı tabloları: `event_publication`, `shedlock`, `flyway_schema_history` (ADR 0014) | — |
 | `identity` | `identity` | Kullanıcı, IdP eşleme, rol, cihaz/push token, hesap silme | `users`, `auth_identities`, `devices` |
 | `taxonomy` | `taxonomy` | Sınav ve konu ağacı | `exams`, `topics` |
 | `media` | `media` | Varlık kaydı, pre-signed URL, medya işleme sonuçları | `assets` |
@@ -174,7 +177,8 @@ com.soruhavuzu.content/
 - Olaylar geçmiş zamanla adlandırılır, değişmez `data class`'tır, yalnızca ID ve gerekli skaler değerleri taşır (aggregate taşımaz).
 - Yayın: `ApplicationEventPublisher`, aynı transaction içinde. Spring Modulith **Event Publication Registry** olayları `event_publication` tablosunda tutar (outbox); dinleyici başarısız olursa yeniden işlenir.
 - Dinleyiciler `@ApplicationModuleListener` (commit sonrası, asenkron, kendi transaction'ı) ile yazılır ve **idempotent** olmak zorundadır.
-- Bir modül servise ayrıldığında olay, Modulith externalization ile SQS'e yönlendirilir; iş kodu değişmez.
+- Olay tipleri yayınlayan modülde değil, açık `events` modülünde `events.<sahip-modül>` altında tanımlanır; modül döngülerini önler (ADR 0013).
+- Bir modül servise ayrıldığında olay, Modulith externalization ile bir kuyruğa yönlendirilir; iş kodu değişmez.
 
 **Olay kataloğu (v1):**
 
@@ -197,6 +201,8 @@ com.soruhavuzu.content/
 
 ## 6. Veri Modeli
 
+> v1.1: Güncel DDL `backend/src/main/resources/db/migration` altındadır. Bu bölümden farklar: `practice.attempt_keys` idempotency tablosu, PK `(user_id, client_attempt_id)` (ADR 0015; etkisiz `ux_attempts_client` yok) · `content.question_version_embeddings` (ADR 0016; `question_versions.embedding` kolonu yok) · `moderation.key_suspects` · `reputation_events` tekilliği `NULLS NOT DISTINCT` · attempts partition sınırları UTC · `question_pool.random_key` varsayılansız (RandomSource) · `platform` şeması (ADR 0014).
+
 Genel kurallar: ID'ler uygulamada üretilen **UUIDv7**; zamanlar `timestamptz` (UTC); para/oran yok; enum'lar `text` + `CHECK`; şemalar arası FK yok (ID ile referans).
 
 ```sql
@@ -211,7 +217,7 @@ CREATE TABLE identity.users (
   created_at    timestamptz NOT NULL,
   deleted_at    timestamptz
 );
--- IdP'den bağımsızlık: Cognito değişirse yalnızca bu tablo etkilenir
+-- IdP'den bağımsızlık: kimlik sağlayıcı (Logto) değişirse yalnızca bu tablo etkilenir
 CREATE TABLE identity.auth_identities (
   provider  text NOT NULL,                         -- 'cognito'
   subject   text NOT NULL,                         -- IdP 'sub'
@@ -432,7 +438,7 @@ CREATE TABLE notification.notifications (
 
 ## 7. İçerik Formatı (Blok-JSON)
 
-Tek kaynak: `packages/content-schema/schema.json` (JSON Schema). Backend aynı dosyayla doğrular (networknt json-schema-validator), TS tarafı zod şemasını buradan türetir.
+Tek kaynak: `packages/content-schema` (v1.1: yazım kaynağı zod tanımlarıdır; `schema.json` (JSON Schema) bundan üretilir, ADR 0019). Backend aynı dosyayla doğrular (networknt json-schema-validator), TS tarafı zod şemasını buradan türetir.
 
 ```jsonc
 // body / solution / option.body
@@ -587,7 +593,7 @@ ACTIVE/IN_REVIEW ──yazar geri çeker──▶ REMOVED
 | İçerik şeması | JSON Schema + KaTeX allowlist | Senkron red (400) |
 | Birebir kopya | normalize metin SHA-256 | REJECTED |
 | Görsel kopya | pHash, Hamming ≤ 8 | review_item `DUPLICATE_CANDIDATE` |
-| Görsel uygunsuz | Rekognition | Asset REJECTED → soru REJECTED |
+| Görsel uygunsuz | Görsel moderasyon yöntemi Faz 1 kararı (ADR 0023) | Asset REJECTED → soru REJECTED |
 | ÖSYM/yayınevi | Filigran/anahtar ifade listesi + (v2) embedding benzerliği | REJECTED veya `COPYRIGHT` review_item |
 | Rate limit | Bucket4j | 429 |
 
@@ -633,21 +639,22 @@ Defter (`reputation_events`) tek kaynaktır; bakiye projeksiyondur ve her zaman 
 2. media    asset(UPLOADING) oluşturur, 5 dk geçerli pre-signed PUT döner
             (key = uploads/{userId}/{assetId}, content-type ve content-length-range kısıtlı, max 5 MB,
              yalnızca image/jpeg|png|webp|heic)
-3. İstemci  S3'e PUT
-4. S3 event → SQS media-in → Lambda media-processor:
-            decode → EXIF sil → max 1600px WebP → pHash → Rekognition
-            → public/{assetId}.webp yazar → SQS media-results'a sonuç
+3. İstemci  S3 uyumlu depolamaya (SeaweedFS, media.<host>) PUT
+4. Yükleme olayı → kuyruk media-in → medya worker:
+            decode → EXIF sil → max 1600px WebP → pHash → (görsel moderasyonu: Faz 1 kararı)
+            → public/{assetId}.webp yazar → media-results kuyruğuna sonuç
 5. media    sonucu tüketir → asset READY/REJECTED → AssetProcessed yayınlar
 6. content  soru gönderiminde yalnızca READY ve sahibi kendisi olan asset'leri kabul eder
 ```
 
-`uploads/` öneki 24 saatlik lifecycle ile temizlenir. `public/` yalnızca CloudFront OAC ile okunur; bucket public değildir.
+`uploads/` öneki 24 saatte temizlenir (zamanlanmış iş). Bucket public değildir; okuma yalnızca `public/` önekinden yapılır. Adım 4'teki olay köprüsü (depolama bildirimi veya API'ye "yükleme tamamlandı" çağrısı) Faz 1'de kararlaştırılır (ADR 0023).
 
 ## 14. Kimlik ve Yetkilendirme
 
-- İstemci Cognito'dan token alır (Apple/Google/e-posta). Backend Spring Security Resource Server ile JWT'yi doğrular (issuer + audience + imza).
-- İlk istekte `(provider='cognito', subject=sub)` → `identity.users` eşlemesi yapılır; yoksa kullanıcı oluşturulur (`UserRegistered`).
-- Uygulama içinde **her yerde** iç `UserId` kullanılır; Cognito `sub` yalnızca `identity` modülünde görünür.
+- İstemci Logto'dan (OIDC, PKCE) `resource=https://api.<host>` ile access token alır. Backend Spring Security Resource Server ile JWT'yi doğrular: imza (JWKS) + `iss` + `exp` + `aud` (API resource) + `client_id` izin listesi (ADR 0024).
+- İlk istekte `(provider='logto', subject=sub)` → `identity.users` eşlemesi yapılır; yoksa kullanıcı oluşturulur (`UserRegistered`) (ADR 0018).
+- Uygulama içinde **her yerde** iç `UserId` kullanılır; IdP `sub` yalnızca `identity` modülünde görünür. Rol token'dan değil veritabanından okunur.
+- `local`/`test` profilinde Logto yerine sahte JWT üretici; staging/prod profilleriyle birlikte açılamaz.
 - Rol kontrolü: `@PreAuthorize` yalnızca web katmanında. Sahiplik kontrolü (ör. kendi sorusunu düzenleme) `application` katmanında domain kuralıdır.
 
 ## 15. API Sözleşmesi
@@ -707,31 +714,36 @@ mobile/
 
 ## 17. Altyapı
 
-| Kaynak | v1 boyutu |
-| --- | --- |
-| RDS PostgreSQL | db.t4g.small, tek AZ, 7 gün otomatik yedek, şifreli |
-| ECS Fargate | 0.5 vCPU / 1 GB × 1 görev (min 1, max 3) |
-| Ağ | NAT Gateway yok; S3/SQS/Secrets Manager için VPC endpoint |
-| S3 | `soruhavuzu-media-{env}`, versioning açık, public erişim kapalı |
-| Ortamlar | `dev` (lokal docker-compose), `staging`, `prod` — hepsi CDK ile |
-| Redis | v1'de yok (Bucket4j Postgres). İhtiyaçta ElastiCache t4g.micro |
+Tek VPS (Türkiye, 5 GB RAM) üzerinde Dokploy; internete yalnızca Traefik (80/443) açık (ADR 0023).
 
-Lokal geliştirme: `docker-compose` ile Postgres (+pgvector) + LocalStack (S3/SQS). Cognito yerine `local` profilinde sahte JWT üretici.
+| Servis | v1 (beta) | Bellek sınırı |
+| --- | --- | --- |
+| PostgreSQL 17 + pgvector + ltree | Dokploy veritabanı; `soruhavuzu` ve `logto` veritabanları; günlük yedek (gerçek kullanıcıdan önce sunucu dışı hedef zorunlu) | 768 MB |
+| soruhavuzu-api | GHCR imajı (amd64 + arm64), `staging` profili | 1 GB |
+| Logto | OIDC + giriş ekranları (`auth.`), yönetim konsolu (`auth-admin.`) | 512 MB |
+| SeaweedFS | S3 ağ geçidi (`media.`), bucket `soruhavuzu-media-{env}` | 256 MB |
+| ElasticMQ | `media-in`, `media-results` (+DLQ), kalıcı mesaj deposu | 128 MB |
+| Admin | statik nginx (`admin.`) | 32 MB |
+| Ortamlar | `dev` (lokal docker-compose), `beta` (bu sunucu); `prod` sunucusu Faz 4–5'te belirlenir | |
+| Redis | v1'de yok (Bucket4j Postgres) | |
+
+Alan adı gelene kadar adresler `*.<ip>.sslip.io` (Let's Encrypt). Lokal geliştirme: `docker-compose` ile Postgres (+pgvector) + SeaweedFS + ElasticMQ (ADR 0022); Logto yerine `local` profilinde sahte JWT üretici.
 
 ## 18. Gözlemlenebilirlik
 
 - **Log:** JSON, alanlar `timestamp, level, traceId, spanId, module, event, userId(hash)`. Kişisel veri, token, içerik gövdesi loglanmaz.
-- **Trace:** OpenTelemetry agent, HTTP + JDBC + olay dinleyicileri.
+- **Trace:** OpenTelemetry agent, HTTP + JDBC + olay dinleyicileri. Beta'da dışa aktarım kapalı; traceId/spanId loglarda. Loglar Dokploy log görüntüleyicisinde.
 - **İş metrikleri:** `questions_submitted`, `review_queue_age_seconds`, `flagged_ratio`, `pool_bucket_size{exam,bucket}`, `attempts_total`, `calibration_logloss`, `event_publication_incomplete`.
-- **Alarmlar:** 5xx oranı > %1 (5 dk), kuyruk yaşı > 24 saat, tamamlanmamış olay > 100, herhangi bir kovada aktif soru < 20.
+- **Alarmlar:** 5xx oranı > %1 (5 dk), kuyruk yaşı > 24 saat, tamamlanmamış olay > 100, herhangi bir kovada aktif soru < 20. Alarm aracı Faz 5'te seçilir (tek sunucu).
 
 ## 19. Güvenlik
 
 - Tüm trafik TLS. JWT doğrulaması her istekte.
-- Gizli bilgiler yalnızca Secrets Manager'da; repoda `.env` örneği hariç gizli değer yok.
+- Gizli bilgiler yalnızca dağıtım platformunun gizli değişkenlerinde (Dokploy); repoda `.env` örneği hariç gizli değer yok.
 - Girdi doğrulama: DTO seviyesinde Bean Validation + içerik için JSON Schema + KaTeX allowlist.
 - Admin panelinde LaTeX/HTML render'ı sandbox'lı iframe/WebView'de.
 - S3 pre-signed URL'ler kısa ömürlü ve tür/boyut kısıtlı.
+- Sunucuda yalnızca Traefik dışa açık; Postgres, ElasticMQ ve Logto veritabanı iç ağda.
 - Bağımlılık taraması: Dependabot + OWASP dependency-check / `pnpm audit` CI'da.
 - Mobil: OWASP MASVS L1 hedefi; token secure-store'da, sertifika doğrulaması varsayılan.
 
@@ -771,7 +783,7 @@ Kod değişmez: admin panelinden `taxonomy` kaydı.
 2. `<Modul>Api` çağrılarını HTTP istemcisiyle değiştiren adaptör yaz (arayüz aynı kalır).
 3. Şemayı ayrı veritabanına taşı (şemalar arası FK olmadığı için mümkün).
 
-## 21. Başlangıç ADR Listesi
+## 21. ADR Listesi
 
 | ADR | Karar |
 | --- | --- |
@@ -783,7 +795,28 @@ Kod değişmez: admin panelinden `taxonomy` kaydı.
 | 0006 | Değişmez soru versiyonları, append-only attempts |
 | 0007 | Elo/Rasch zorluk modeli, yükleyen puanı prior |
 | 0008 | Yüzdelik tabanlı 1–10 kova |
-| 0009 | Cognito Lite + IdP'den bağımsız iç kullanıcı kimliği |
-| 0010 | Medya işleme Lambda'da, S3 pre-signed yükleme |
+| 0009 | Cognito Lite + IdP'den bağımsız iç kullanıcı kimliği — *yerini aldı: 0024* |
+| 0010 | Medya işleme Lambda'da, S3 pre-signed yükleme — *kısmen yerini aldı: 0023* |
 | 0011 | UUIDv7 kimlikler |
 | 0012 | ÖSYM/yayınevi içerik yasağı ve kaldırma süreci |
+| 0013 | Olay sözleşmeleri ayrı açık `events` modülünde |
+| 0014 | Altyapı tabloları `platform` şemasında |
+| 0015 | Attempt idempotency'si ayrı anahtar tablosuyla |
+| 0016 | Soru versiyonu embedding'leri ayrı tabloda |
+| 0017 | TS istemcisi: openapi-typescript + openapi-fetch |
+| 0018 | Access token doğrulaması ve ilk istekte kullanıcı (Cognito kuralları 0024 ile değişti) |
+| 0019 | İçerik şemasının yazım kaynağı zod; schema.json üretilir |
+| 0020 | Node 24 LTS ve bağımlılık yaşı ≥ 14 gün |
+| 0021 | Mobil ve admin araç zinciri |
+| 0022 | Lokal S3/SQS: SeaweedFS + ElasticMQ |
+| 0023 | Tek sunucu (Dokploy) dağıtımı; AWS kullanılmaz |
+| 0024 | Kimlik sağlayıcı: Logto |
+
+---
+
+## Değişiklik Kaydı
+
+| Sürüm | Tarih | Değişiklik |
+| --- | --- | --- |
+| 1.0 | 2026-10-28 | İlk sürüm |
+| 1.1 | 2026-10-29 | ADR 0013–0024 işlendi: tek sunucu/Dokploy, Logto, SeaweedFS/ElasticMQ, `events` modülü, `platform` şeması, veri modeli farkları, zod kaynaklı şema |
