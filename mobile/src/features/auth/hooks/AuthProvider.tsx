@@ -4,8 +4,9 @@ import { queryClient, setTokenProvider } from "@/shared/api";
 
 import { refreshSession } from "../api/cognito";
 import { requestDevSession } from "../api/devToken";
-import { isExpired, type Session } from "../model/session";
+import type { Session } from "../model/session";
 import { sessionStore } from "../model/sessionStore";
+import { createTokenProvider } from "../model/tokenProvider";
 
 export type AuthState = { status: "loading" } | { status: "signedOut" } | { status: "signedIn"; session: Session };
 
@@ -35,19 +36,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // API istemcisi token'ı buradan alır; süresi dolmuşsa önce yenilemeyi dener, olmazsa oturumu kapatır
-    setTokenProvider(async () => {
-      const current = sessionRef.current;
-      if (!current) return null;
-      if (!isExpired(current, Date.now())) return current.accessToken;
-      const refreshed = await refreshSession(current).catch(() => null);
-      await apply(refreshed);
-      return refreshed?.accessToken ?? null;
-    });
-    void sessionStore.load().then((stored) => {
+    // İlk istekler kalıcı oturum yüklenmeden token istemesin diye sağlayıcı yüklemeyi bekler
+    const loading = sessionStore.load().then((stored) => {
       sessionRef.current = stored;
       setState(stored ? { status: "signedIn", session: stored } : { status: "signedOut" });
     });
+    setTokenProvider(
+      createTokenProvider({
+        getSession: async () => {
+          await loading;
+          return sessionRef.current;
+        },
+        refresh: refreshSession,
+        onRefreshed: (session) => apply(session),
+        onSignedOut: () => apply(null),
+        now: () => Date.now(),
+      }),
+    );
   }, [apply]);
 
   const value = useMemo<AuthContextValue>(
