@@ -74,7 +74,7 @@ class TokenValidationTests : IntegrationTest() {
     }
 
     @Test
-    fun `audience'sız token reddedilir`() {
+    fun `audience'sız token uçtan uca reddedilir (hangi katman reddederse etsin)`() {
         meStatus(token(audience = null)) shouldBe UNAUTHORIZED
     }
 
