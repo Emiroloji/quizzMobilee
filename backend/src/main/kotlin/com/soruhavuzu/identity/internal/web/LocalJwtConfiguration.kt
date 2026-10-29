@@ -16,7 +16,7 @@ import java.time.Clock
 
 /**
  * local/test: açılışta üretilen RSA anahtarıyla sahte JWT üretici ve ona bağlı decoder (fazlar.md Faz 0).
- * Doğrulama kuralları Cognito ile aynıdır; yalnızca imza anahtarı farklıdır.
+ * Doğrulama kuralları üretim ile aynıdır; yalnızca imza anahtarı farklıdır.
  */
 @Configuration(proxyBeanMethods = false)
 @Profile("local | test")

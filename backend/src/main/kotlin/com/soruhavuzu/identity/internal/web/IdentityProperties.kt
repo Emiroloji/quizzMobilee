@@ -12,10 +12,18 @@ data class IdentityProperties(
     @field:Valid val token: Token,
 ) {
     data class Token(
-        /** auth_identities.provider değeri: prod/staging'de `cognito`, local/test'te `local`. */
+        /** auth_identities.provider değeri: staging/prod'da `logto`, local/test'te `local`. */
         @field:NotBlank val provider: String,
         @field:NotBlank val issuerUri: String,
-        /** Kabul edilen uygulama istemcileri (mobil, admin); access token'daki `client_id` (ADR 0018). */
-        @field:NotEmpty val clientIds: Set<String>,
-    )
+        /** JWKS adresi (Logto: <issuer>/jwks). local/test'te kullanılmaz. */
+        val jwkSetUri: String? = null,
+        /** Kabul edilen API resource indicator'ları; access token'daki `aud` bunlardan birini içermeli (ADR 0024). */
+        @field:NotEmpty val audiences: Set<@NotBlank String>,
+        /** Boş değilse yalnızca bu istemcilerin token'ı kabul edilir (`client_id`). Boş girdiler yok sayılır. */
+        val clientIds: Set<String> = emptySet(),
+        @field:NotEmpty val jwsAlgorithms: Set<String> = setOf("ES384"),
+    ) {
+        /** Boş girdiler (ör. `OIDC_CLIENT_IDS=` -> `[""]`) elenmiş izin listesi. */
+        val allowedClientIds: Set<String> get() = clientIds.filterTo(linkedSetOf()) { it.isNotBlank() }
+    }
 }

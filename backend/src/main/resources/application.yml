@@ -43,9 +43,12 @@ soruhavuzu:
     user-id-hash-key: ${LOG_USER_ID_HASH_KEY:}
   identity:
     token:
-      provider: cognito
-      issuer-uri: ${COGNITO_ISSUER_URI:}
-      client-ids: ${COGNITO_CLIENT_IDS:}
+      provider: logto
+      issuer-uri: ${OIDC_ISSUER_URI:}
+      jwk-set-uri: ${OIDC_JWK_SET_URI:}
+      audiences: ${OIDC_AUDIENCES:}
+      client-ids: ${OIDC_CLIENT_IDS:}
+      jws-algorithms: ${OIDC_JWS_ALGORITHMS:ES384}
   practice:
     attempt-partitions:
       months-ahead: 3

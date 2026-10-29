@@ -18,7 +18,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 
-/** Yalnızca local/test: Cognito'nun yerine geçen sahte access token üretici. API sözleşmesinde yer almaz. */
+/** Yalnızca local/test: Logto'nun yerine geçen sahte access token üretici. API sözleşmesinde yer almaz. */
 @Hidden
 @Profile("local | test")
 @RestController
@@ -41,8 +41,8 @@ class DevTokenController(
                 .subject(request.subject)
                 .issuedAt(now)
                 .expiresAt(expiresAt)
-                .claim(AccessTokenValidators.CLIENT_ID, request.clientId ?: properties.token.clientIds.first())
-                .claim(AccessTokenValidators.TOKEN_USE, AccessTokenValidators.ACCESS)
+                .claim(AccessTokenValidators.CLIENT_ID, request.clientId ?: properties.token.allowedClientIds.first())
+                .audience(listOf(properties.token.audiences.first()))
                 .build()
         val header = JwsHeader.with(SignatureAlgorithm.RS256).build()
         val token = encoder.encode(JwtEncoderParameters.from(header, claims)).tokenValue

@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.get
 import java.time.Duration
 import java.time.Instant
 
-/** ADR 0018: yalnızca doğru issuer'lı, süresi geçmemiş, izinli istemcinin ACCESS token'ı kabul edilir. */
+/** ADR 0024: doğru issuer'lı, süresi geçmemiş, doğru audience'lı ve (varsa) izinli istemcinin access token'ı kabul edilir. */
 class TokenValidationTests : IntegrationTest() {
     @Autowired
     lateinit var mvc: MockMvc
@@ -31,11 +31,11 @@ class TokenValidationTests : IntegrationTest() {
     private fun token(
         encoder: JwtEncoder = this.encoder,
         issuer: String = ISSUER,
-        tokenUse: String = "access",
+        audience: String? = AUDIENCE,
         clientId: String = "test-mobile",
         expiresAt: Instant = Instant.now().plus(Duration.ofMinutes(10)),
     ): String {
-        val claims =
+        val builder =
             JwtClaimsSet
                 .builder()
                 .issuer(issuer)
@@ -43,9 +43,8 @@ class TokenValidationTests : IntegrationTest() {
                 .issuedAt(expiresAt.minus(Duration.ofMinutes(20)))
                 .expiresAt(expiresAt)
                 .claim("client_id", clientId)
-                .claim("token_use", tokenUse)
-                .build()
-        return encoder.encode(JwtEncoderParameters.from(JwsHeader.with(SignatureAlgorithm.RS256).build(), claims)).tokenValue
+        audience?.let { builder.audience(listOf(it)) }
+        return encoder.encode(JwtEncoderParameters.from(JwsHeader.with(SignatureAlgorithm.RS256).build(), builder.build())).tokenValue
     }
 
     private fun meStatus(token: String): Int =
@@ -65,8 +64,23 @@ class TokenValidationTests : IntegrationTest() {
     }
 
     @Test
-    fun `id token reddedilir, yalnızca access token kabul edilir`() {
-        meStatus(token(tokenUse = "id")) shouldBe UNAUTHORIZED
+    fun `token_use claim'i olmayan Logto biçimli access token kabul edilir`() {
+        meStatus(token()) shouldBe OK
+    }
+
+    @Test
+    fun `başka API için verilmiş (yanlış audience) token reddedilir`() {
+        meStatus(token(audience = "https://baska-api.example")) shouldBe UNAUTHORIZED
+    }
+
+    @Test
+    fun `audience'sız token reddedilir`() {
+        meStatus(token(audience = null)) shouldBe UNAUTHORIZED
+    }
+
+    @Test
+    fun `izin listesinde olmayan istemcinin token'ı reddedilir`() {
+        meStatus(token(clientId = "yabanci-istemci")) shouldBe UNAUTHORIZED
     }
 
     @Test
@@ -83,6 +97,7 @@ class TokenValidationTests : IntegrationTest() {
 
     private companion object {
         const val ISSUER = "https://auth.test.soruhavuzu.invalid"
+        const val AUDIENCE = "https://api.test.soruhavuzu.invalid"
         const val OK = 200
         const val UNAUTHORIZED = 401
     }

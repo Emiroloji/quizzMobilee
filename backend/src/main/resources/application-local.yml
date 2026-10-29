@@ -25,4 +25,5 @@ soruhavuzu:
     token:
       provider: local
       issuer-uri: https://auth.local.soruhavuzu.invalid
+      audiences: http://localhost:8080
       client-ids: local-mobile,local-admin
