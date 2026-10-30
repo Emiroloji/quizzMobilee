@@ -25,6 +25,12 @@ Bu komut sırasıyla şunları yapar:
 
 Tüm komutları görmek için `make help` çalıştırın.
 
+## Deploy
+
+Beta, tek bir VPS'te Dokploy ile çalışır ([ADR 0023](docs/adr/0023-single-server-dokploy.md); kimlik: Logto, [ADR 0024](docs/adr/0024-logto-identity.md)).
+- `main`'e merge → CI → GHCR imajları (amd64 + arm64) → Dokploy redeploy → duman testi.
+- Kurulum adımları: [deploy/README.md](deploy/README.md). Yerel doğrulama: `make images TAG=smoke OWNER=local && make beta-smoke`.
+
 ## Gereksinimler
 
 | Araç | Sürüm | Not |
