@@ -1,0 +1,134 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with: { distribution: temurin, java-version: "25" }
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - name: Lint, test, mimari testler (ktlint, detekt, Modulith, ArchUnit, Testcontainers)
+        working-directory: backend
+        run: ./gradlew check --console=plain
+      - name: OpenAPI farkı
+        run: git diff --exit-code -- packages/api-client/openapi.json
+
+  js:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Üretilen dosyaların farkı
+        run: |
+          pnpm --filter @soruhavuzu/api-client generate
+          pnpm --filter @soruhavuzu/content-schema generate
+          git diff --exit-code -- packages/api-client/src/schema.ts packages/content-schema/schema.json
+
+  gitleaks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+
+  actionlint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:1.7.12 -color
+
+  beta-smoke:
+    runs-on: ubuntu-24.04
+    needs: [backend, js]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with: { distribution: temurin, java-version: "25" }
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Beta compose duman testi (api, logto, s3, sqs, admin)
+        run: make images TAG=smoke OWNER=local && make beta-smoke
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, js, gitleaks, actionlint, beta-smoke]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VITE_AUTH_MODE: oidc
+      VITE_API_URL: https://api.${{ vars.BETA_BASE_HOST }}
+      VITE_API_RESOURCE: https://api.${{ vars.BETA_BASE_HOST }}
+      VITE_OIDC_ISSUER: https://auth.${{ vars.BETA_BASE_HOST }}/oidc
+      VITE_OIDC_CLIENT_ID: ${{ vars.BETA_OIDC_ADMIN_CLIENT_ID }}
+      VITE_ASSET_BASE_URL: https://media.${{ vars.BETA_BASE_HOST }}/soruhavuzu-media-beta
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with: { distribution: temurin, java-version: "25" }
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Jar, OTel agent ve admin derlemesi
+        run: |
+          (cd backend && ./gradlew bootJar otelAgentJar --console=plain)
+          pnpm --filter @soruhavuzu/admin build
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - name: API imajı (amd64 + arm64)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: backend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/soruhavuzu-api:${{ github.sha }},ghcr.io/${{ github.repository_owner }}/soruhavuzu-api:beta
+      - name: Admin imajı (amd64 + arm64)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: admin
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/soruhavuzu-admin:${{ github.sha }},ghcr.io/${{ github.repository_owner }}/soruhavuzu-admin:beta
+
+  deploy-beta:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [publish]
+    runs-on: ubuntu-24.04
+    environment: beta
+    steps:
+      - name: Dokploy redeploy (compose :beta imajlarını çeker)
+        env: { WEBHOOK: "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}" }
+        run: curl -fsS -X POST "$WEBHOOK" >/dev/null
+      - name: Duman testi
+        env: { API: "https://api.${{ vars.BETA_BASE_HOST }}" }
+        run: |
+          curl -sf --retry 40 --retry-delay 10 --retry-all-errors "$API/actuator/health" | grep -q '"UP"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$API/v1/me")" = "401"
