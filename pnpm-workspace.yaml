@@ -6,3 +6,7 @@ packages:
 
 # ADR 0020: yalnızca en az 14 günlük (20160 dk) sürümler çözülür; araçla zorlanır
 minimumReleaseAge: 20160
+
+# ADR 0020: kilit dosyasındaki 14 günden yeni geçişli sürümler, kuralı karşılayan en yeni sürüme sabitlenir; 14 gün dolunca kaldırılabilir
+overrides:
+  browserslist: 4.29.3
