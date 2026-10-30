@@ -1,3 +1,5 @@
 config-variables:
   - BETA_BASE_HOST
   - BETA_OIDC_ADMIN_CLIENT_ID
+  - DOKPLOY_URL
+  - DOKPLOY_COMPOSE_ID

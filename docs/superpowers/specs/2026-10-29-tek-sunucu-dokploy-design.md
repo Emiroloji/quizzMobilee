@@ -77,7 +77,7 @@ Postgres'te iki veritabanı vardır: `soruhavuzu` (uygulama; şema başına mod�
 GitHub Actions, sırayla:
 1. lint → test → mimari testler → OpenAPI/schema farkı → gitleaks → actionlint
 2. Çok mimarili imajlar (API, admin) → GHCR
-3. `main`'e merge → Dokploy deploy webhook'u (beta)
+3. `main`'e merge → Dokploy API'si `compose.deploy` (beta); CI yayındaki SHA'yı `/actuator/info` ile doğrular
 4. Duman testi: `GET https://api.<host>/actuator/health` = UP ve `GET /v1/me` = 401
 
 Prod iş akışı (tag + elle onay) prod sunucusu belirlenince eklenir. İmajlar CI'da derlenir, sunucuda derleme yapılmaz (5 GB RAM, Gradle).

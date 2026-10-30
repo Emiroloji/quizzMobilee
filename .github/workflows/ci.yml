@@ -110,6 +110,8 @@ jobs:
         with:
           context: backend
           platforms: linux/amd64,linux/arm64
+          # /actuator/info → app.version; deploy-beta yayındaki sürümü bununla doğrular
+          build-args: GIT_SHA=${{ github.sha }}
           push: true
           tags: ghcr.io/${{ env.GHCR_OWNER }}/soruhavuzu-api:${{ github.sha }},ghcr.io/${{ env.GHCR_OWNER }}/soruhavuzu-api:beta
       - name: Admin imajı (amd64 + arm64)
@@ -125,12 +127,35 @@ jobs:
     needs: [publish]
     runs-on: ubuntu-24.04
     environment: beta
+    timeout-minutes: 15
     steps:
-      - name: Dokploy redeploy (compose :beta imajlarını çeker)
-        env: { WEBHOOK: "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}" }
-        run: curl -fsS -X POST "$WEBHOOK" >/dev/null
-      - name: Duman testi
+      - name: Dokploy redeploy (API; compose :beta imajlarını çeker)
+        env:
+          DOKPLOY_URL: ${{ vars.DOKPLOY_URL }}
+          DOKPLOY_COMPOSE_ID: ${{ vars.DOKPLOY_COMPOSE_ID }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+        run: |
+          set -euo pipefail
+          : "${DOKPLOY_URL:?DOKPLOY_URL repository variable eksik}" "${DOKPLOY_COMPOSE_ID:?DOKPLOY_COMPOSE_ID repository variable eksik}" "${DOKPLOY_API_KEY:?DOKPLOY_API_KEY secret eksik}"
+          # API anahtarı düz HTTP'den gönderilmez (deploy/README.md: panel HTTPS)
+          case "$DOKPLOY_URL" in https://*) ;; *) echo "✗ DOKPLOY_URL https:// ile başlamalı"; exit 1 ;; esac
+          body=$(jq -nc --arg id "$DOKPLOY_COMPOSE_ID" '{composeId: $id}')
+          code=$(curl -sS -o dokploy.out -w '%{http_code}' -X POST "${DOKPLOY_URL%/}/api/compose.deploy" \
+            -H "x-api-key: $DOKPLOY_API_KEY" -H 'Content-Type: application/json' -d "$body")
+          echo "Dokploy compose.deploy: HTTP $code"
+          case "$code" in 2??) ;; *) head -c 500 dokploy.out; echo; exit 1 ;; esac
+      - name: Duman testi (yayındaki sürüm bu commit mi?)
         env: { API: "https://api.${{ vars.BETA_BASE_HOST }}" }
         run: |
-          curl -sf --retry 40 --retry-delay 10 --retry-all-errors "$API/actuator/health" | grep -q '"UP"'
+          set -euo pipefail
+          version=""
+          for i in $(seq 1 30); do
+            version=$(curl -fsS "$API/actuator/info" 2>/dev/null | jq -r '.app.version // empty' 2>/dev/null || true)
+            [ "$version" = "$GITHUB_SHA" ] && break
+            echo "deneme $i/30: yayındaki sürüm '${version:-?}', beklenen $GITHUB_SHA"
+            sleep 10
+          done
+          test "$version" = "$GITHUB_SHA" || { echo "✗ yeni sürüm yayına çıkmadı"; exit 1; }
+          curl -fsS "$API/actuator/health" | jq -e '.status == "UP"' >/dev/null
           test "$(curl -s -o /dev/null -w '%{http_code}' "$API/v1/me")" = "401"
+          echo "✓ $GITHUB_SHA yayında, sağlıklı; /v1/me kimliksiz 401"

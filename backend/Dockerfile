@@ -12,5 +12,8 @@ ENV JAVA_TOOL_OPTIONS="-javaagent:/app/otel/opentelemetry-javaagent.jar -XX:MaxR
     OTEL_TRACES_EXPORTER=none \
     OTEL_METRICS_EXPORTER=none \
     OTEL_LOGS_EXPORTER=none
+# Yayındaki sürümün kanıtı: /actuator/info → app.version (CI: --build-arg GIT_SHA=<commit>)
+ARG GIT_SHA=dev
+ENV APP_VERSION=$GIT_SHA
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

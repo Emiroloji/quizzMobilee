@@ -9,11 +9,11 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
 
 1. **GitHub ayarları (önce):**
    - Repository variables (Settings → Secrets and variables → Actions → Variables → **Repository variables**): `BETA_BASE_HOST` = `BASE_HOST` değeri.
-   - `BETA_BASE_HOST` ve `BETA_OIDC_ADMIN_CLIENT_ID` ortam (environment) değişkeni değil, **Repository variable** olmalı. `publish` işinde `environment:` yok; ortam değişkeni orada boş okunur.
+   - `BETA_BASE_HOST` ve `BETA_OIDC_ADMIN_CLIENT_ID` (ve 9. adımdaki `DOKPLOY_URL`, `DOKPLOY_COMPOSE_ID`) ortam (environment) değişkeni değil, **Repository variable** olmalı. `publish` işinde `environment:` yok; ortam değişkeni orada boş okunur.
    - Environment: `beta` adlı ortamı oluştur (`deploy-beta` işi bunu kullanır).
    - Branch protection (`main`): PR zorunlu, doğrudan push kapalı (kurallar.md §8 madde 3). Zorunlu status check'ler: `backend`, `js`, `gitleaks`, `actionlint`, `beta-smoke`. `publish` ve `deploy-beta` zorunlu yapılmaz; PR'larda atlanırlar. Bir check en az bir kez çalışmadan GitHub listesinde görünmez; check'leri 2. adımdan sonra ekle.
 2. **İlk `main` push'u:** PR'ı merge et. CI imajları GHCR'a yayınlar (`soruhavuzu-api:beta`, `soruhavuzu-admin:beta`).
-   - `deploy-beta` bu ilk çalışmada **başarısız olur**: webhook henüz yok. Beklenen durumdur.
+   - `deploy-beta` bu ilk çalışmada **başarısız olur**: Dokploy API ayarları (9. adım) henüz yok. Beklenen durumdur.
    - GHCR imajları private ise (6. adımdan önce): Dokploy → Registry → ghcr.io (GitHub PAT, `read:packages`).
 3. **Postgres:** Dokploy → Create Database → PostgreSQL.
    - Image: `pgvector/pgvector:0.8.7-pg17`, bellek sınırı 768 MB.
@@ -34,6 +34,7 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
      - Parolalar 4. adımdan.
      - `OIDC_CLIENT_IDS` şimdilik boş kalabilir; 8. adımda doldurulur.
    - Bucket `soruhavuzu-media-beta`, `s3-init` servisi tarafından otomatik oluşturulur.
+   - **Autodeploy: KAPALI** (Compose → General). Açık kalırsa Dokploy'un kendi GitHub tetiklemesi `publish` ile yarışır ve eski `:beta` imajını çeker. Deploy'u yalnızca CI'daki `deploy-beta` tetikler.
 7. **Domains** (Dokploy → Compose → Domains, HTTPS, Let's Encrypt):
 
    | Servis | Port | Host |
@@ -55,7 +56,11 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
    - Connectors → Email: SMTP bilgilerini gir.
 9. **CI'ı tamamlayan ayarlar:**
    - Repository variable `BETA_OIDC_ADMIN_CLIENT_ID` = **SPA uygulamasının ID'si** (Native uygulamanınki değil).
-   - Secret `DOKPLOY_DEPLOY_WEBHOOK` = Dokploy → Compose → Deployments → Webhook URL (repository veya `beta` environment secret'ı olabilir).
+   - **Önce Dokploy panelini HTTPS'e al:** Dokploy → Settings → Server domain → `panel.$BASE_HOST` (Let's Encrypt). API anahtarı düz HTTP üzerinden (`http://<ip>:3000`) asla gönderilmez; CI `https://` olmayan adresi reddeder.
+   - Repository variable `DOKPLOY_URL` = panel adresi, ör. `https://panel.$BASE_HOST` (sonda `/` olmadan).
+   - Repository variable `DOKPLOY_COMPOSE_ID` = compose'un ID'si; Dokploy'da compose sayfasının adresindeki son parça (`.../compose/<composeId>`).
+   - Secret `DOKPLOY_API_KEY` = Dokploy → Settings → Profile → API/CLI → Generate (repository veya `beta` environment secret'ı olabilir).
+   - CI, deploy'u `POST $DOKPLOY_URL/api/compose.deploy` (`x-api-key` başlığı) ile tetikler. Ardından `https://api.$BASE_HOST/actuator/info` adresindeki `app.version` bu commit'in SHA'sı olana kadar bekler (en çok ~5 dk). Sonra sağlık ve `/v1/me` → 401 kontrollerini yapar.
 10. **CI'ı yeniden çalıştır:** GitHub → Actions → `main` üzerindeki son `ci` çalışması → "Re-run all jobs". Değişkenler çalışma anında okunur, bu yüzden yeni değerler geçerli olur. (`workflow_dispatch` yoktur, Ruling 12.) Yeniden çalışma admin imajını istemci ID'siyle yeniden derler ve Dokploy'u redeploy eder.
 11. **Mobil** (EAS):
     - `eas env:create --environment preview` ile şunları gir:
@@ -67,9 +72,11 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
       - `EXPO_PUBLIC_ASSET_BASE_URL=https://media.$BASE_HOST/soruhavuzu-media-beta`
     - `eas build -p android --profile preview` ile build al.
 12. **Doğrulama (Faz 0 kabul kriterleri):**
-    - CI'daki `deploy-beta` duman testi yeşil. Bu iş `BETA_BASE_HOST` değişkenine ve `DOKPLOY_DEPLOY_WEBHOOK` secret'ına bağlıdır; ikisi de yoksa başarısız olur.
+    - CI'daki `deploy-beta` duman testi yeşil (yayındaki api sürümü = commit SHA). Bu iş `BETA_BASE_HOST`, `DOKPLOY_URL`, `DOKPLOY_COMPOSE_ID` değişkenlerine ve `DOKPLOY_API_KEY` secret'ına bağlıdır; biri eksikse başarısız olur.
     - Admin'de Logto ile kayıt ve giriş → "… olarak giriş yapıldı (USER)".
     - Mobil preview build'de giriş → ana sayfada kullanıcı.
     - `docker stats` ile bellek kullanımını kontrol et.
 
 Alan adı alınınca: DNS'te `api|admin|auth|auth-admin|media.<alanadı>` kayıtlarını aç, Dokploy domain'lerini, `BASE_HOST`'u ve Logto ENDPOINT'lerini güncelle. Ardından Logto'da Google ve Apple bağlayıcılarını ekle.
+
+**Geri alma (rollback):** `publish` her imajı `:<commit-sha>` etiketiyle de yayınlar. Dokploy → Compose → Environment'ta `IMAGE_TAG=<önceki-sha>` yap ve **Deploy**'a bas. Sorun giderilince `IMAGE_TAG=beta`'ya geri dön. `IMAGE_TAG` sabitken CI'ın `deploy-beta` işi de o sabit imajı çeker ve SHA kontrolünde başarısız olur. Bu beklenen durumdur.

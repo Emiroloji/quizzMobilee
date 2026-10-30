@@ -32,6 +32,15 @@ management:
       exposure:
         # modulith (modül yapısı) yalnızca local profilde açılır
         include: health,info
+  info:
+    # /actuator/info yalnızca aşağıdaki info.app.version'ı gösterir (anonim; deploy-beta SHA kanıtı)
+    env:
+      enabled: true
+
+info:
+  app:
+    # İmaja derlemede GIT_SHA build-arg'ı ile gömülür (backend/Dockerfile)
+    version: ${APP_VERSION:dev}
 
 springdoc:
   default-produces-media-type: application/json

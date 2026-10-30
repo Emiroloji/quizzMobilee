@@ -9,7 +9,7 @@
 - Dokploy'un yönetilen Postgres'i.
 - Traefik ile TLS.
 
-İmajlar GitHub Actions'ta çok mimarili derlenip GHCR'a gönderilir. `main` merge'ü Dokploy webhook'uyla redeploy tetikler. Backend JWT doğrulaması yapılandırmayla belirlenir: issuer, JWKS, audience, izinli `client_id`'ler.
+İmajlar GitHub Actions'ta çok mimarili derlenip GHCR'a gönderilir. `main` merge'ü Dokploy API'siyle (`compose.deploy`) redeploy tetikler (final review Ruling 13; ilk plan webhook kullanıyordu). Backend JWT doğrulaması yapılandırmayla belirlenir: issuer, JWKS, audience, izinli `client_id`'ler.
 
 **Tech Stack:**
 - Uygulama: Spring Boot 4.1.2 / Kotlin 2.3, Logto 1.45.0 (`svhd/logto:1.45.0`)
@@ -1219,7 +1219,7 @@ git commit -m "feat(shared): beta Dokploy compose tanımı ve uçtan uca duman t
 - Consumes: Task 5 (`make images`, Dockerfile'lar) ve Task 6 (`make beta-smoke`).
 - GitHub'da tanımlanacaklar (Görev 10):
   - Repo değişkenleri: `BETA_BASE_HOST`, `BETA_OIDC_ADMIN_CLIENT_ID`
-  - Gizli değişken: `DOKPLOY_DEPLOY_WEBHOOK`
+  - Gizli değişken: `DOKPLOY_API_KEY`; repo değişkenleri `DOKPLOY_URL`, `DOKPLOY_COMPOSE_ID` (final review Ruling 13 ile webhook'un yerini aldı)
   - Ortam: `beta`
 
 - [ ] **Step 1: Başarısız doğrulamayı çalıştır**
@@ -1357,8 +1357,8 @@ jobs:
     environment: beta
     steps:
       - name: Dokploy redeploy (compose :beta imajlarını çeker)
-        env: { WEBHOOK: "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}" }
-        run: curl -fsS -X POST "$WEBHOOK" >/dev/null
+        # Final review Ruling 13/14 ile değişti: Dokploy API (compose.deploy) + /actuator/info SHA doğrulaması.
+        # Güncel hâli: .github/workflows/ci.yml
       - name: Duman testi
         env: { API: "https://api.${{ vars.BETA_BASE_HOST }}" }
         run: |
@@ -1478,7 +1478,7 @@ git commit -m "feat(mobile): EAS build profilleri ve development client"
 7. **GitHub ayarları:**
    - Variables: `BETA_BASE_HOST`, `BETA_OIDC_ADMIN_CLIENT_ID`.
    - Environment: `beta`.
-   - Secret: `DOKPLOY_DEPLOY_WEBHOOK` (Dokploy → Compose → Deployments → Webhook URL).
+   - Secret: `DOKPLOY_API_KEY`, variables `DOKPLOY_URL`, `DOKPLOY_COMPOSE_ID` (Ruling 13; ayrıntı deploy/README.md).
    - Branch protection: `main`'e doğrudan push kapalı, `ci` zorunlu (kurallar.md §8).
 8. **Mobil** (EAS):
    - `eas env:create --environment preview` ile şunları gir:

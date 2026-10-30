@@ -68,7 +68,7 @@ logto-claims: ## Logto access token biçimini gösterir: make logto-claims ID=..
 images: ## Backend ve admin imajlarını yerel mimaride üretir: make images TAG=smoke OWNER=local
 	$(GRADLE) bootJar otelAgentJar
 	pnpm --filter @soruhavuzu/admin build
-	docker build -t ghcr.io/$(OWNER)/soruhavuzu-api:$(TAG) backend
+	docker build --build-arg GIT_SHA=$(TAG) -t ghcr.io/$(OWNER)/soruhavuzu-api:$(TAG) backend
 	docker build -t ghcr.io/$(OWNER)/soruhavuzu-admin:$(TAG) admin
 
 beta-smoke: ## Beta compose'unu yerel imajlarla ayağa kaldırıp tüm servisleri doğrular
@@ -76,13 +76,14 @@ beta-smoke: ## Beta compose'unu yerel imajlarla ayağa kaldırıp tüm servisler
 	printf 'BASE_HOST=smoke.localhost\nGHCR_OWNER=local\nIMAGE_TAG=smoke\nDB_HOST=postgres\nDB_PASSWORD=smoke\nLOGTO_DB_PASSWORD=smoke\nOIDC_CLIENT_IDS=\nLOG_USER_ID_HASH_KEY=smoke\nS3_ACCESS_KEY=smoke\nS3_SECRET_KEY=smoke-secret\n' > deploy/smoke.env; \
 	trap 'rc=$$?; if [ $$rc -ne 0 ]; then echo "✗ duman testi başarısız; son günlükler:"; $(SMOKE) logs --tail 50 || true; fi; $(SMOKE) down -v --remove-orphans || true; rm -f deploy/smoke.env; exit $$rc' EXIT; \
 	$(SMOKE) up -d --wait --wait-timeout 300 postgres api logto s3 sqs admin; \
-	curl -sf http://127.0.0.1:18080/actuator/health | grep -q '"UP"'; \
+	curl -sf http://127.0.0.1:18080/actuator/health | grep '"UP"' >/dev/null; \
+	curl -sf http://127.0.0.1:18080/actuator/info | grep '"version":"smoke"' >/dev/null; \
 	test "$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/v1/me)" = "401"; \
-	curl -sf http://127.0.0.1:13001/oidc/.well-known/openid-configuration | grep -q '"issuer":"https://auth.smoke.localhost/oidc"'; \
+	curl -sf http://127.0.0.1:13001/oidc/.well-known/openid-configuration | grep '"issuer":"https://auth.smoke.localhost/oidc"' >/dev/null; \
 	curl -sf http://127.0.0.1:18333/status >/dev/null; \
-	curl -sf "http://127.0.0.1:19324/?Action=ListQueues" | grep -q media-in; \
-	curl -sf http://127.0.0.1:18082/ | grep -q '<div id="root">'; \
+	curl -sf "http://127.0.0.1:19324/?Action=ListQueues" | grep media-in >/dev/null; \
+	curl -sf http://127.0.0.1:18082/ | grep '<div id="root">' >/dev/null; \
 	$(SMOKE) run --rm s3-init; \
 	$(SMOKE) run --rm s3-init; \
-	$(SMOKE) exec -T s3 sh -c "echo s3.bucket.list | weed shell -master=127.0.0.1:9333" | grep -q soruhavuzu-media-beta; \
+	$(SMOKE) exec -T s3 sh -c "echo s3.bucket.list | weed shell -master=127.0.0.1:9333" | grep soruhavuzu-media-beta >/dev/null; \
 	echo "✓ beta compose: api, logto, s3 (kova dahil), sqs, admin sağlıklı"

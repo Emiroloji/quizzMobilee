@@ -47,7 +47,7 @@ Bu dosya sistemin **nasıl** kurulduğunu tanımlar. Buradaki kararlar ancak `do
 | Push | Expo Push Service | APNs/FCM soyutlaması |
 | Çalışma ortamı | Tek VPS (Türkiye, 5 GB RAM) + Dokploy (Docker + Traefik) | Maliyet yok, veri Türkiye'de (ADR 0023) |
 | Dağıtım tanımı | `deploy/` (Dokploy compose dosyaları + runbook) | Sürümlü, tekrar edilebilir |
-| CI/CD | GitHub Actions → GHCR (amd64 + arm64) → Dokploy deploy webhook; EAS Build (mobil) | İmaj CI'da derlenir, sunucuda derleme yok |
+| CI/CD | GitHub Actions → GHCR (amd64 + arm64) → Dokploy API (`compose.deploy`, yayındaki SHA doğrulanır); EAS Build (mobil) | İmaj CI'da derlenir, sunucuda derleme yok |
 | Gözlemlenebilirlik | Yapılandırılmış JSON log (Dokploy log görüntüleyici); OpenTelemetry Java agent (traceId loglarda, dışa aktarım beta'da kapalı) | |
 | Konum | Türkiye (VPS) | KVKK: veri yurt içinde |
 
