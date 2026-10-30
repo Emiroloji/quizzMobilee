@@ -5,7 +5,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose
 GRADLE := cd backend && ./gradlew --console=plain
 
-.PHONY: help doctor install infra dev backend backend-otel admin mobile check test lint typecheck api down reset logto-claims
+.PHONY: help images doctor install infra dev backend backend-otel admin mobile check test lint typecheck api down reset logto-claims
 
 help: ## Komutları listeler
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-14s %s\n", $$1, $$2}'
@@ -63,3 +63,9 @@ reset: ## Konteynerleri ve lokal veriyi siler
 
 logto-claims: ## Logto access token biçimini gösterir: make logto-claims ID=... SECRET=...
 	deploy/scripts/logto-token-claims.sh http://localhost:3001/oidc "$(ID)" "$(SECRET)" http://localhost:8080
+
+images: ## Backend ve admin imajlarını yerel mimaride üretir: make images TAG=smoke OWNER=local
+	$(GRADLE) bootJar otelAgentJar
+	pnpm --filter @soruhavuzu/admin build
+	docker build -t ghcr.io/$(OWNER)/soruhavuzu-api:$(TAG) backend
+	docker build -t ghcr.io/$(OWNER)/soruhavuzu-admin:$(TAG) admin

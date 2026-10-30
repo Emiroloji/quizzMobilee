@@ -1,0 +1,3 @@
+*
+!build/libs/soruhavuzu-api.jar
+!build/otel/opentelemetry-javaagent.jar

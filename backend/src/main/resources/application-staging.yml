@@ -1,0 +1,10 @@
+# Değerler Dokploy ortam değişkenlerinden gelir (ADR 0023)
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+soruhavuzu:
+  web:
+    allowed-origins: ${ALLOWED_ORIGINS}

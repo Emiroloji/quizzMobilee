@@ -133,3 +133,7 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 tasks.named("check") {
     dependsOn("detektMain") // type-resolution gerektiren yasaklar (!!, Instant.now) yalnızca burada çalışır
 }
+
+tasks.bootJar {
+    archiveFileName = "soruhavuzu-api.jar"
+}
