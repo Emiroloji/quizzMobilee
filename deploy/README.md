@@ -11,10 +11,10 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
    - Repository variables (Settings → Secrets and variables → Actions → Variables → **Repository variables**): `BETA_BASE_HOST` = `BASE_HOST` değeri.
    - `BETA_BASE_HOST` ve `BETA_OIDC_ADMIN_CLIENT_ID` ortam (environment) değişkeni değil, **Repository variable** olmalı. `publish` işinde `environment:` yok; ortam değişkeni orada boş okunur.
    - Environment: `beta` adlı ortamı oluştur (`deploy-beta` işi bunu kullanır).
-   - Branch protection (`main`): PR zorunlu, doğrudan push kapalı (kurallar.md §8 madde 3). Zorunlu status check'ler: `backend`, `js`, `gitleaks`, `actionlint`, `beta-smoke`. `publish` ve `deploy-beta` zorunlu yapılmaz; PR'larda atlanırlar. Bir check en az bir kez çalışmadan GitHub listesinde görünmez; ilk PR'dan sonra ekle.
+   - Branch protection (`main`): PR zorunlu, doğrudan push kapalı (kurallar.md §8 madde 3). Zorunlu status check'ler: `backend`, `js`, `gitleaks`, `actionlint`, `beta-smoke`. `publish` ve `deploy-beta` zorunlu yapılmaz; PR'larda atlanırlar. Bir check en az bir kez çalışmadan GitHub listesinde görünmez; check'leri 2. adımdan sonra ekle.
 2. **İlk `main` push'u:** PR'ı merge et. CI imajları GHCR'a yayınlar (`soruhavuzu-api:beta`, `soruhavuzu-admin:beta`).
    - `deploy-beta` bu ilk çalışmada **başarısız olur**: webhook henüz yok. Beklenen durumdur.
-   - GHCR imajları private ise: Dokploy → Registry → ghcr.io (GitHub PAT, `read:packages`).
+   - GHCR imajları private ise (6. adımdan önce): Dokploy → Registry → ghcr.io (GitHub PAT, `read:packages`).
 3. **Postgres:** Dokploy → Create Database → PostgreSQL.
    - Image: `pgvector/pgvector:0.8.7-pg17`, bellek sınırı 768 MB.
    - İç adı `DB_HOST` olarak not et.
@@ -28,7 +28,7 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
    - Compose path: `deploy/docker-compose.beta.yml`.
    - Environment: `deploy/.env.example`'daki anahtarları doldur.
      - `BASE_HOST` = `<ip-tireli>.sslip.io` değeri.
-     - `GHCR_OWNER` = GitHub kullanıcı adı.
+     - `GHCR_OWNER` = GitHub kullanıcı adı, **küçük harfle** (CI imaj yolunu küçük harfle yayınlar).
      - `DB_HOST` = 3. adımdaki iç ad.
      - `DB_PORT=5432` ve `IMAGE_TAG=beta` varsayılan kalır.
      - Parolalar 4. adımdan.
@@ -43,6 +43,8 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
    | logto | 3001 | `auth.$BASE_HOST` |
    | logto | 3002 | `auth-admin.$BASE_HOST` |
    | s3 | 8333 | `media.$BASE_HOST` |
+
+   Domain'leri ekledikten sonra **Deploy**'a bas; `api` ve `logto` sağlıklı (healthy) olana kadar bekle.
 
 8. **Logto** (`https://auth-admin.$BASE_HOST`):
    - Yönetici hesabını oluştur.
