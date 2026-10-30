@@ -18,7 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with: { distribution: temurin, java-version: "25" }
+        # Gradle JDK 21 üzerinde koşar (detekt 1.23 JDK 25 sürüm dizesini çözemiyor);
+        # uygulama Java 25 toolchain ile derlenir (son satır varsayılan JAVA_HOME olur)
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: Lint, test, mimari testler (ktlint, detekt, Modulith, ArchUnit, Testcontainers)
         working-directory: backend
@@ -63,7 +69,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with: { distribution: temurin, java-version: "25" }
+        # Gradle JDK 21 üzerinde koşar (detekt 1.23 JDK 25 sürüm dizesini çözemiyor);
+        # uygulama Java 25 toolchain ile derlenir (son satır varsayılan JAVA_HOME olur)
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -89,7 +101,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with: { distribution: temurin, java-version: "25" }
+        # Gradle JDK 21 üzerinde koşar (detekt 1.23 JDK 25 sürüm dizesini çözemiyor);
+        # uygulama Java 25 toolchain ile derlenir (son satır varsayılan JAVA_HOME olur)
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
