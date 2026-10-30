@@ -53,8 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       signOut: async () => {
         devSessionStore.clear();
-        await userManager?.removeUser();
         apply(null);
+        if (!userManager) return;
+        // signoutRedirect saklı id_token'ı ipucu olarak kullanır, kullanıcıyı siler ve Logto oturumunu kapatır
+        try {
+          await userManager.signoutRedirect();
+        } catch (error) {
+          await userManager.removeUser();
+          throw error;
+        }
       },
     }),
     [state, apply],

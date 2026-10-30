@@ -1,23 +1,35 @@
-import { UserManager, WebStorageStateStore } from "oidc-client-ts";
+import { UserManager, type UserManagerSettings, WebStorageStateStore } from "oidc-client-ts";
 
-import { config } from "@/shared/config";
+import { type AppConfig, config } from "@/shared/config";
 
 import type { Session } from "../model/session";
 
-/** Logto (Authorization Code + PKCE). Token API resource'u için istenir; yalnızca sekme ömrü boyunca tutulur. */
+type OidcConfig = Extract<AppConfig, { authMode: "oidc" }>;
+
+/**
+ * Logto (Authorization Code + PKCE). Token API resource'u için istenir; yalnızca sekme ömrü boyunca tutulur.
+ * Admin'de sessiz yenileme yok; bu yüzden refresh token (`offline_access`) ve `prompt=consent` istenmez.
+ */
+export function oidcSettings(cfg: OidcConfig, origin: string): UserManagerSettings {
+  return {
+    authority: cfg.oidcIssuer,
+    client_id: cfg.oidcClientId,
+    redirect_uri: `${origin}/auth/callback`,
+    // Logto SPA uygulamasında "Post sign-out redirect URI" olarak kayıtlı olmalı (deploy/README.md)
+    post_logout_redirect_uri: `${origin}/login`,
+    response_type: "code",
+    scope: "openid",
+    extraQueryParams: { resource: cfg.apiResource },
+    extraTokenParams: { resource: cfg.apiResource },
+    automaticSilentRenew: false,
+  };
+}
+
 export const userManager: UserManager | null =
   config.authMode === "oidc"
     ? new UserManager({
-        authority: config.oidcIssuer,
-        client_id: config.oidcClientId,
-        redirect_uri: `${window.location.origin}/auth/callback`,
-        post_logout_redirect_uri: `${window.location.origin}/login`,
-        response_type: "code",
-        scope: "openid offline_access",
-        extraQueryParams: { resource: config.apiResource, prompt: "consent" },
-        extraTokenParams: { resource: config.apiResource },
+        ...oidcSettings(config, window.location.origin),
         userStore: new WebStorageStateStore({ store: window.sessionStorage }),
-        automaticSilentRenew: false,
       })
     : null;
 

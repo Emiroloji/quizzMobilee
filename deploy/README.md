@@ -49,7 +49,7 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
 8. **Logto** (`https://auth-admin.$BASE_HOST`):
    - Yönetici hesabını oluştur.
    - API resource: indicator `https://api.$BASE_HOST`.
-   - SPA uygulaması oluştur: redirect `https://admin.$BASE_HOST/auth/callback`, CORS `https://admin.$BASE_HOST`.
+   - SPA uygulaması oluştur: redirect `https://admin.$BASE_HOST/auth/callback`, post sign-out redirect `https://admin.$BASE_HOST/login`, CORS `https://admin.$BASE_HOST`. (Admin çıkışta Logto oturumunu da kapatır; post sign-out adresi kayıtlı değilse Logto yönlendirmeyi reddeder.)
    - Native uygulama oluştur: redirect `soruhavuzu://auth/callback`.
    - İki uygulamanın ID'sini virgülle Dokploy'da `OIDC_CLIENT_IDS`'e yaz ve compose'u redeploy et.
    - Connectors → Email: SMTP bilgilerini gir.

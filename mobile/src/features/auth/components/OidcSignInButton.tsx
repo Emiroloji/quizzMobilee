@@ -29,6 +29,8 @@ export function OidcSignInButton({ issuer, clientId, resource, label, onError }:
     try {
       const result = await promptAsync();
       if (result.type === "success") await completeSignIn(await exchangeCode(result, request.codeVerifier));
+      // Vazgeçme (cancel/dismiss) hata değildir; Logto'nun döndürdüğü hata ise kullanıcıya bildirilir
+      else if (result.type === "error") onError();
     } catch {
       onError();
     } finally {
