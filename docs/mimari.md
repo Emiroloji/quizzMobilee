@@ -219,7 +219,7 @@ CREATE TABLE identity.users (
 );
 -- IdP'den bağımsızlık: kimlik sağlayıcı (Logto) değişirse yalnızca bu tablo etkilenir
 CREATE TABLE identity.auth_identities (
-  provider  text NOT NULL,                         -- 'cognito'
+  provider  text NOT NULL,                         -- 'logto'
   subject   text NOT NULL,                         -- IdP 'sub'
   user_id   uuid NOT NULL REFERENCES identity.users(id),
   PRIMARY KEY (provider, subject)

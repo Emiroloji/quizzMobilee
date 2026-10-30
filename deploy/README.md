@@ -18,12 +18,13 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
 3. **Postgres:** Dokploy → Create Database → PostgreSQL.
    - Image: `pgvector/pgvector:0.8.7-pg17`, bellek sınırı 768 MB.
    - İç adı `DB_HOST` olarak not et.
-   - Backups: günlük. Gerçek kullanıcıdan önce sunucu dışı bir S3 uyumlu hedef ekle (ör. Cloudflare R2).
+   - Yedekler 5. adımda, veritabanları oluşturulduktan sonra kurulur.
 4. **Parolaları üret** (her biri ayrı, örnek: `openssl rand -hex 32`): `DB_PASSWORD`, `LOGTO_DB_PASSWORD`, `LOG_USER_ID_HASH_KEY`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`. Hex kullanılır; çünkü `LOGTO_DB_PASSWORD` bağlantı adresine (`postgres://logto:<parola>@...`) olduğu gibi girer ve base64'ün `/`, `+`, `=` karakterleri adresi bozar.
 5. **Veritabanları:** Dokploy → Postgres → Terminal:
    `psql -U <admin> -d postgres -v ON_ERROR_STOP=1 -v app_password='<DB_PASSWORD>' -v logto_password='<LOGTO_DB_PASSWORD>' -f -`
    - `<admin>`, Dokploy'un Postgres sayfasında gösterdiği kullanıcıdır.
    - `deploy/postgres-init.sql` içeriğini yapıştır, Ctrl-D ile bitir.
+   - **Yedekler** (Dokploy → Postgres → Backups): **iki ayrı** günlük yedek kaydı oluştur, biri `soruhavuzu`, biri `logto` veritabanı için. Logto veritabanı tüm hesapları ve token imzalama anahtarlarını tutar; kaybolursa herkes yeniden kayıt olmak zorunda kalır. Gerçek kullanıcıdan önce sunucu dışı bir S3 uyumlu hedef ekle (ör. Cloudflare R2). (`s3-data` volume'ünün, yani medya dosyalarının yedeği Faz 1'de gelir.)
 6. **Compose:** Dokploy → Create Service → Compose → GitHub reposu.
    - Compose path: `deploy/docker-compose.beta.yml`.
    - Environment: `deploy/.env.example`'daki anahtarları doldur.
@@ -47,13 +48,16 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
 
    Domain'leri ekledikten sonra **Deploy**'a bas; `api` ve `logto` sağlıklı (healthy) olana kadar bekle.
 
+   > **Güvenlik — hemen 8. adıma geç.** `auth-admin` açıldığı anda Logto'da **ilk oluşturulan hesap yönetici olur**. sslip.io adresi tahmin edilebilir ve Let's Encrypt sertifikası Certificate Transparency kayıtlarında herkese görünür. Bu yüzden deploy biter bitmez, başka hiçbir şey yapmadan yönetici hesabını oluştur.
+
 8. **Logto** (`https://auth-admin.$BASE_HOST`):
-   - Yönetici hesabını oluştur.
+   - **İlk iş:** yönetici hesabını oluştur (7. adımdaki uyarı).
    - API resource: indicator `https://api.$BASE_HOST`.
    - SPA uygulaması oluştur: redirect `https://admin.$BASE_HOST/auth/callback`, post sign-out redirect `https://admin.$BASE_HOST/login`, CORS `https://admin.$BASE_HOST`. (Admin çıkışta Logto oturumunu da kapatır; post sign-out adresi kayıtlı değilse Logto yönlendirmeyi reddeder.)
    - Native uygulama oluştur: redirect `soruhavuzu://auth/callback`.
    - İki uygulamanın ID'sini virgülle Dokploy'da `OIDC_CLIENT_IDS`'e yaz ve compose'u redeploy et.
    - Connectors → Email: SMTP bilgilerini gir.
+   - **Kurulum bitince `auth-admin` domain'ini kaldır:** Dokploy → Compose → Domains → `auth-admin.$BASE_HOST` → sil ve redeploy et. Yönetim konsolu böylece internetten erişilemez. Gerektiğinde domain'i geçici olarak yeniden ekle, işin bitince yine kaldır.
 9. **CI'ı tamamlayan ayarlar:**
    - Repository variable `BETA_OIDC_ADMIN_CLIENT_ID` = **SPA uygulamasının ID'si** (Native uygulamanınki değil).
    - **Önce Dokploy panelini HTTPS'e al:** Dokploy → Settings → Server domain → `panel.$BASE_HOST` (Let's Encrypt). API anahtarı düz HTTP üzerinden (`http://<ip>:3000`) asla gönderilmez; CI `https://` olmayan adresi reddeder.
@@ -78,5 +82,9 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
     - `docker stats` ile bellek kullanımını kontrol et.
 
 Alan adı alınınca: DNS'te `api|admin|auth|auth-admin|media.<alanadı>` kayıtlarını aç, Dokploy domain'lerini, `BASE_HOST`'u ve Logto ENDPOINT'lerini güncelle. Ardından Logto'da Google ve Apple bağlayıcılarını ekle.
+
+**Logto sürüm yükseltme:** `svhd/logto` imaj sürümünü artırmadan önce veritabanı şemasını yeni sürüme taşı. Önce `logto` veritabanının yedeğini al. Ardından sunucuda yeni imajla tek seferlik bir konteyner çalıştır (`<yeni>` hedef sürüm, ör. `1.46.0`):
+`docker run --rm --network dokploy-network -e DB_URL='postgres://logto:<LOGTO_DB_PASSWORD>@<DB_HOST>:5432/logto' --entrypoint sh svhd/logto:<yeni> -c 'npm run cli db alteration deploy <yeni>'`
+Sonra `deploy/docker-compose.beta.yml`'deki imaj etiketini güncelle (PR ile) ve deploy et. Alteration yapılmadan yeni sürüm başlatılırsa Logto açılmaz.
 
 **Geri alma (rollback):** `publish` her imajı `:<commit-sha>` etiketiyle de yayınlar. Dokploy → Compose → Environment'ta `IMAGE_TAG=<önceki-sha>` yap ve **Deploy**'a bas. Sorun giderilince `IMAGE_TAG=beta`'ya geri dön. `IMAGE_TAG` sabitken CI'ın `deploy-beta` işi de o sabit imajı çeker ve SHA kontrolünde başarısız olur. Bu beklenen durumdur.

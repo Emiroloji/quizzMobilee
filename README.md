@@ -54,7 +54,7 @@ Beta, tek bir VPS'te Dokploy ile çalışır ([ADR 0023](docs/adr/0023-single-se
 
 LocalStack yerine neden bunlar kullanılıyor: [ADR 0022](docs/adr/0022-local-aws-emulation.md). Verileri sıfırlamak için `make reset`.
 
-**Kimlik:** `local` profilinde Cognito yerine sahte JWT üretici çalışır (`POST /v1/dev/tokens`, [ADR 0018](docs/adr/0018-cognito-access-token-jit-user.md)). Mobil ve admin `dev` modunda bunu kullanır; herhangi bir "geliştirici kimliği" yeni bir kullanıcı oluşturur.
+**Kimlik:** `local` profilinde Logto yerine sahte JWT üretici çalışır (`POST /v1/dev/tokens`, [ADR 0018](docs/adr/0018-cognito-access-token-jit-user.md)). Mobil ve admin `dev` modunda bunu kullanır; herhangi bir "geliştirici kimliği" yeni bir kullanıcı oluşturur.
 
 ## Mobil uygulama
 
