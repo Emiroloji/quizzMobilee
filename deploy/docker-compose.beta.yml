@@ -80,6 +80,8 @@ services:
 
   sqs:
     <<: *limits
+    # Yalnızca compose'un iç ağında: Traefik/domain yok, api'den başkası erişmez
+    networks: [default]
     image: softwaremill/elasticmq-native:1.7.1
     volumes:
       - ./elasticmq.conf:/opt/elasticmq.conf:ro

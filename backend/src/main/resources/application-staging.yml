@@ -8,3 +8,10 @@ spring:
 soruhavuzu:
   web:
     allowed-origins: ${ALLOWED_ORIGINS}
+
+# Beta herkese açık; API belgesi ve Swagger UI prod'daki gibi kapalı (yerelde local profilde açık)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

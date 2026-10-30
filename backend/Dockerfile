@@ -7,7 +7,7 @@ COPY --chown=app:app build/libs/soruhavuzu-api.jar app.jar
 COPY --chown=app:app build/otel/opentelemetry-javaagent.jar otel/opentelemetry-javaagent.jar
 USER app
 
-ENV JAVA_TOOL_OPTIONS="-javaagent:/app/otel/opentelemetry-javaagent.jar -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError" \
+ENV JAVA_TOOL_OPTIONS="-javaagent:/app/otel/opentelemetry-javaagent.jar -XX:MaxRAMPercentage=65 -XX:+ExitOnOutOfMemoryError" \
     OTEL_SERVICE_NAME=soruhavuzu-api \
     OTEL_TRACES_EXPORTER=none \
     OTEL_METRICS_EXPORTER=none \
