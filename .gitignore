@@ -34,3 +34,5 @@ mobile/android/
 
 # cdk
 infra/cdk.out/
+deploy/.env
+deploy/smoke.env

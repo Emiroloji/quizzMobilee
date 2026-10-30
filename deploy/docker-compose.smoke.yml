@@ -1,0 +1,35 @@
+# Yalnızca CI/lokal duman testi: Dokploy ağı ve DB yerine geçici Postgres, yerel imajlar ve yayınlanan portlar.
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg17
+    environment: { POSTGRES_USER: admin, POSTGRES_PASSWORD: admin, POSTGRES_DB: postgres }
+    volumes: [./postgres-init.sql:/init/postgres-init.sql:ro]
+    command: ["postgres"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 2s
+      retries: 30
+    networks: [default]
+  db-init:
+    image: pgvector/pgvector:0.8.7-pg17
+    depends_on: { postgres: { condition: service_healthy } }
+    environment: { PGPASSWORD: admin }
+    command: ["psql", "-h", "postgres", "-U", "admin", "-d", "postgres", "-v", "app_password=smoke", "-v", "logto_password=smoke", "-f", "/init/postgres-init.sql"]
+    volumes: [./postgres-init.sql:/init/postgres-init.sql:ro]
+    networks: [default]
+  # Ana dosyadaki [default, dokploy-network] listesi birleştirilmesin, değiştirilsin diye !override
+  api:
+    pull_policy: never
+    networks: !override [default]
+    depends_on: { db-init: { condition: service_completed_successfully } }
+    ports: ["127.0.0.1:18080:8080"]
+  logto:
+    networks: !override [default]
+    depends_on: { db-init: { condition: service_completed_successfully } }
+    ports: ["127.0.0.1:13001:3001"]
+  s3: { networks: !override [default], ports: ["127.0.0.1:18333:8333"] }
+  sqs: { networks: !override [default], ports: ["127.0.0.1:19324:9324"] }
+  admin: { pull_policy: never, networks: !override [default], ports: ["127.0.0.1:18082:8080"] }
+
+networks:
+  dokploy-network: !reset null

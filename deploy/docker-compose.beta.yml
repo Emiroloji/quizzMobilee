@@ -1,0 +1,101 @@
+# Dokploy "Compose" uygulaması (ADR 0023). Postgres, Dokploy'un yönetilen veritabanıdır (DB_HOST).
+# Alan adları Dokploy arayüzünden servis başına eklenir (Traefik); burada port yayınlanmaz.
+name: soruhavuzu-beta
+
+x-limits: &limits
+  restart: unless-stopped
+  networks: [default, dokploy-network]
+
+services:
+  api:
+    <<: *limits
+    image: ghcr.io/${GHCR_OWNER}/soruhavuzu-api:${IMAGE_TAG:-beta}
+    pull_policy: always
+    environment:
+      SPRING_PROFILES_ACTIVE: staging
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: soruhavuzu
+      DB_USERNAME: soruhavuzu
+      DB_PASSWORD: ${DB_PASSWORD}
+      OIDC_ISSUER_URI: https://auth.${BASE_HOST}/oidc
+      OIDC_JWK_SET_URI: http://logto:3001/oidc/jwks
+      OIDC_AUDIENCES: https://api.${BASE_HOST}
+      OIDC_CLIENT_IDS: ${OIDC_CLIENT_IDS}
+      LOG_USER_ID_HASH_KEY: ${LOG_USER_ID_HASH_KEY}
+      ALLOWED_ORIGINS: https://admin.${BASE_HOST}
+    # Bağımlılar (ve `up --wait`) gerçek hazır olmayı beklesin diye
+    healthcheck:
+      # İmajda curl/wget yok; bash'in /dev/tcp'si ile
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 5s
+      retries: 60
+    deploy: { resources: { limits: { memory: 1g } } }
+
+  logto:
+    <<: *limits
+    image: svhd/logto:1.45.0
+    entrypoint: ["sh", "-c", "npm run cli db seed -- --swe && npm start"]
+    environment:
+      TRUST_PROXY_HEADER: "1"
+      DB_URL: postgres://logto:${LOGTO_DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/logto
+      ENDPOINT: https://auth.${BASE_HOST}
+      ADMIN_ENDPOINT: https://auth-admin.${BASE_HOST}
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/api/status').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))\""]
+      interval: 5s
+      retries: 60
+    deploy: { resources: { limits: { memory: 512m } } }
+
+  s3:
+    <<: *limits
+    image: chrislusf/seaweedfs:4.48
+    entrypoint: ["/bin/sh", "-c"]
+    # Erişim anahtarları ortamdan gelir; yapılandırma dosyası açılışta üretilir (repoda sır yok)
+    command:
+      - >-
+        printf '{"identities":[{"name":"api","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","List","Tagging","Write"]}]}'
+        "$$S3_ACCESS_KEY" "$$S3_SECRET_KEY" > /tmp/s3.json &&
+        exec weed server -dir=/data -s3 -s3.port=8333 -s3.config=/tmp/s3.json -ip.bind=0.0.0.0
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    volumes: [s3-data:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8333/status || exit 1"]
+      interval: 5s
+      retries: 30
+    deploy: { resources: { limits: { memory: 256m } } }
+
+  s3-init:
+    image: chrislusf/seaweedfs:4.48
+    depends_on:
+      s3: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        echo 's3.bucket.list' | weed shell -master=s3:9333 | grep -q 'soruhavuzu-media-beta' ||
+        echo 's3.bucket.create -name soruhavuzu-media-beta' | weed shell -master=s3:9333
+    restart: "no"
+
+  sqs:
+    <<: *limits
+    image: softwaremill/elasticmq-native:1.7.1
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf:ro
+      - sqs-data:/data
+    deploy: { resources: { limits: { memory: 128m } } }
+
+  admin:
+    <<: *limits
+    image: ghcr.io/${GHCR_OWNER}/soruhavuzu-admin:${IMAGE_TAG:-beta}
+    pull_policy: always
+    deploy: { resources: { limits: { memory: 32m } } }
+
+volumes:
+  s3-data:
+  sqs-data:
+
+networks:
+  dokploy-network:
+    external: true
