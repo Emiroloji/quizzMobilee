@@ -9,9 +9,7 @@ export const tr = {
   auth: {
     title: "Giriş yap",
     subtitle: "Seviyene uygun soruları çözmeye başla.",
-    withApple: "Apple ile devam et",
-    withGoogle: "Google ile devam et",
-    withEmail: "E-posta ile devam et",
+    continue: "Giriş yap veya kayıt ol",
     devSubjectLabel: "Geliştirici kimliği",
     devSubjectHint: "Yerel backend'in sahte JWT üreticisi için herhangi bir kimlik",
     devSignIn: "Geliştirici olarak giriş yap",

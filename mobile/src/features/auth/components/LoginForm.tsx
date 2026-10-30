@@ -5,9 +5,9 @@ import { View } from "react-native";
 import { t } from "@/shared/i18n";
 import { AppText, Button, spacing, TextField } from "@/shared/ui";
 
-import { cognitoSettings } from "../api/cognito";
+import { oidcSettings } from "../api/oidc";
 import { useAuth } from "../hooks/AuthProvider";
-import { CognitoButton } from "./CognitoButton";
+import { OidcSignInButton } from "./OidcSignInButton";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,7 +16,7 @@ export function LoginForm() {
   const [subject, setSubject] = useState("gelistirici-1");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const cognito = cognitoSettings();
+  const oidc = oidcSettings();
 
   const onDevSignIn = async () => {
     setBusy(true);
@@ -34,12 +34,8 @@ export function LoginForm() {
     <View style={{ gap: spacing.md }}>
       <AppText variant="title">{t("auth.title")}</AppText>
       <AppText variant="small">{t("auth.subtitle")}</AppText>
-      {cognito ? (
-        <>
-          <CognitoButton {...cognito} provider="SignInWithApple" label={t("auth.withApple")} onError={() => setFailed(true)} />
-          <CognitoButton {...cognito} provider="Google" label={t("auth.withGoogle")} onError={() => setFailed(true)} />
-          <CognitoButton {...cognito} provider="COGNITO" label={t("auth.withEmail")} onError={() => setFailed(true)} />
-        </>
+      {oidc ? (
+        <OidcSignInButton {...oidc} label={t("auth.continue")} onError={() => setFailed(true)} />
       ) : (
         <>
           <TextField label={t("auth.devSubjectLabel")} hint={t("auth.devSubjectHint")} value={subject} onChangeText={setSubject} />

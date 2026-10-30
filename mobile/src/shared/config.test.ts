@@ -9,17 +9,18 @@ describe("parseConfig", () => {
     expect(() => parseConfig({}, false)).toThrow();
   });
 
-  it("release build'de cognito yapılandırması eksiksiz verilirse kabul edilir", () => {
+  it("release build'de oidc yapılandırması eksiksiz verilirse kabul edilir", () => {
     const config = parseConfig(
       {
-        EXPO_PUBLIC_AUTH_MODE: "cognito",
+        EXPO_PUBLIC_AUTH_MODE: "oidc",
         EXPO_PUBLIC_API_URL: "https://api.example",
-        EXPO_PUBLIC_ASSET_BASE_URL: "https://cdn.example",
-        EXPO_PUBLIC_COGNITO_DOMAIN: "https://auth.example",
-        EXPO_PUBLIC_COGNITO_CLIENT_ID: "abc",
+        EXPO_PUBLIC_ASSET_BASE_URL: "https://media.example",
+        EXPO_PUBLIC_OIDC_ISSUER: "https://auth.example/oidc",
+        EXPO_PUBLIC_OIDC_CLIENT_ID: "abc",
+        EXPO_PUBLIC_API_RESOURCE: "https://api.example",
       },
       false,
     );
-    expect(config.authMode).toBe("cognito");
+    expect(config.authMode).toBe("oidc");
   });
 });

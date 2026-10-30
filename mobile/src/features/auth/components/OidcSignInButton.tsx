@@ -3,30 +3,24 @@ import { useState } from "react";
 
 import { Button } from "@/shared/ui";
 
-import { discovery, exchangeCode, type IdentityProvider, redirectUri, SCOPES } from "../api/cognito";
+import { discovery, exchangeCode, redirectUri, SCOPES } from "../api/oidc";
 import { useAuth } from "../hooks/AuthProvider";
 
 interface Props {
-  domain: string;
+  issuer: string;
   clientId: string;
-  provider: IdentityProvider;
+  resource: string;
   label: string;
   onError: () => void;
 }
 
-/** Cognito managed login (PKCE). `identity_provider` ile Apple/Google ekranına doğrudan gidilir. */
-export function CognitoButton({ domain, clientId, provider, label, onError }: Props) {
+/** Logto'nun giriş/kayıt ekranı (PKCE); token API resource'u için istenir (ADR 0024). */
+export function OidcSignInButton({ issuer, clientId, resource, label, onError }: Props) {
   const { completeSignIn } = useAuth();
   const [busy, setBusy] = useState(false);
   const [request, , promptAsync] = useAuthRequest(
-    {
-      clientId,
-      redirectUri,
-      scopes: SCOPES,
-      usePKCE: true,
-      extraParams: provider === "COGNITO" ? {} : { identity_provider: provider },
-    },
-    discovery(domain),
+    { clientId, redirectUri, scopes: SCOPES, usePKCE: true, extraParams: { resource, prompt: "consent" } },
+    discovery(issuer),
   );
 
   const onPress = async () => {
@@ -42,5 +36,5 @@ export function CognitoButton({ domain, clientId, provider, label, onError }: Pr
     }
   };
 
-  return <Button label={label} variant="secondary" onPress={() => void onPress()} loading={busy} disabled={!request} />;
+  return <Button label={label} onPress={() => void onPress()} loading={busy} disabled={!request} />;
 }

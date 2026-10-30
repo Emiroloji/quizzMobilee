@@ -6,10 +6,11 @@ const common = { apiUrl: z.url(), assetBaseUrl: z.url() };
 const configSchema = z.discriminatedUnion("authMode", [
   z.object({ authMode: z.literal("dev"), ...common }),
   z.object({
-    authMode: z.literal("cognito"),
+    authMode: z.literal("oidc"),
     ...common,
-    cognitoDomain: z.url(),
-    cognitoClientId: z.string().min(1),
+    oidcIssuer: z.url(),
+    oidcClientId: z.string().min(1),
+    apiResource: z.url(),
   }),
 ]);
 
@@ -31,8 +32,9 @@ export function parseConfig(env: Readonly<Record<string, string | undefined>>, i
     authMode: env.EXPO_PUBLIC_AUTH_MODE ?? fallback.authMode,
     apiUrl: env.EXPO_PUBLIC_API_URL ?? fallback.apiUrl,
     assetBaseUrl: env.EXPO_PUBLIC_ASSET_BASE_URL ?? fallback.assetBaseUrl,
-    cognitoDomain: env.EXPO_PUBLIC_COGNITO_DOMAIN,
-    cognitoClientId: env.EXPO_PUBLIC_COGNITO_CLIENT_ID,
+    oidcIssuer: env.EXPO_PUBLIC_OIDC_ISSUER,
+    oidcClientId: env.EXPO_PUBLIC_OIDC_CLIENT_ID,
+    apiResource: env.EXPO_PUBLIC_API_RESOURCE,
   });
 }
 
@@ -42,8 +44,9 @@ export const config: AppConfig = parseConfig(
     EXPO_PUBLIC_AUTH_MODE: process.env.EXPO_PUBLIC_AUTH_MODE,
     EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL,
     EXPO_PUBLIC_ASSET_BASE_URL: process.env.EXPO_PUBLIC_ASSET_BASE_URL,
-    EXPO_PUBLIC_COGNITO_DOMAIN: process.env.EXPO_PUBLIC_COGNITO_DOMAIN,
-    EXPO_PUBLIC_COGNITO_CLIENT_ID: process.env.EXPO_PUBLIC_COGNITO_CLIENT_ID,
+    EXPO_PUBLIC_OIDC_ISSUER: process.env.EXPO_PUBLIC_OIDC_ISSUER,
+    EXPO_PUBLIC_OIDC_CLIENT_ID: process.env.EXPO_PUBLIC_OIDC_CLIENT_ID,
+    EXPO_PUBLIC_API_RESOURCE: process.env.EXPO_PUBLIC_API_RESOURCE,
   },
   __DEV__,
 );

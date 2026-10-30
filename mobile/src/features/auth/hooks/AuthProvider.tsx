@@ -2,7 +2,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 
 import { queryClient, setTokenProvider } from "@/shared/api";
 
-import { refreshSession } from "../api/cognito";
+import { refreshSession } from "../api/oidc";
 import { requestDevSession } from "../api/devToken";
 import type { Session } from "../model/session";
 import { sessionStore } from "../model/sessionStore";
