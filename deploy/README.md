@@ -65,7 +65,7 @@ Sıra önemlidir. İmajlar ilk `main` push'unda üretilir; admin imajı Logto SP
    - Repository variable `DOKPLOY_COMPOSE_ID` = compose'un ID'si; Dokploy'da compose sayfasının adresindeki son parça (`.../compose/<composeId>`).
    - Secret `DOKPLOY_API_KEY` = Dokploy → Settings → Profile → API/CLI → Generate (repository veya `beta` environment secret'ı olabilir).
    - CI, deploy'u `POST $DOKPLOY_URL/api/compose.deploy` (`x-api-key` başlığı) ile tetikler. Ardından `https://api.$BASE_HOST/actuator/info` adresindeki `app.version` bu commit'in SHA'sı olana kadar bekler (en çok ~5 dk). Sonra sağlık ve `/v1/me` → 401 kontrollerini yapar.
-10. **CI'ı yeniden çalıştır:** GitHub → Actions → `main` üzerindeki son `ci` çalışması → "Re-run all jobs". Değişkenler çalışma anında okunur, bu yüzden yeni değerler geçerli olur. (`workflow_dispatch` yoktur, Ruling 12.) Yeniden çalışma admin imajını istemci ID'siyle yeniden derler ve Dokploy'u redeploy eder.
+10. **CI'ı yeniden çalıştır:** GitHub → Actions → `main` üzerindeki son `ci` çalışması → "Re-run all jobs". Değişkenler çalışma anında okunur, bu yüzden yeni değerler geçerli olur. (`workflow_dispatch` yoktur, Ruling 12.) Yeniden çalışma admin imajını istemci ID'siyle yeniden derler ve Dokploy'u redeploy eder. **Yalnızca en son `main` çalışmasını** yeniden çalıştır; eski bir çalışma eski SHA'yı `:beta` olarak yeniden yayınlar ve beta'yı geri alır.
 11. **Mobil** (EAS):
     - `eas env:create --environment preview` ile şunları gir:
       - `EXPO_PUBLIC_AUTH_MODE=oidc`

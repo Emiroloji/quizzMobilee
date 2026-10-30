@@ -150,7 +150,7 @@ jobs:
           set -euo pipefail
           version=""
           for i in $(seq 1 30); do
-            version=$(curl -fsS "$API/actuator/info" 2>/dev/null | jq -r '.app.version // empty' 2>/dev/null || true)
+            version=$(curl -fsS --max-time 10 "$API/actuator/info" 2>/dev/null | jq -r '.app.version // empty' 2>/dev/null || true)
             [ "$version" = "$GITHUB_SHA" ] && break
             echo "deneme $i/30: yayındaki sürüm '${version:-?}', beklenen $GITHUB_SHA"
             sleep 10
