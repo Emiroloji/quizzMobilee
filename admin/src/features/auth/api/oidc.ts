@@ -4,15 +4,18 @@ import { config } from "@/shared/config";
 
 import type { Session } from "../model/session";
 
-/** Cognito managed login (Authorization Code + PKCE). Token yalnızca sekme ömrü boyunca tutulur. */
+/** Logto (Authorization Code + PKCE). Token API resource'u için istenir; yalnızca sekme ömrü boyunca tutulur. */
 export const userManager: UserManager | null =
-  config.authMode === "cognito"
+  config.authMode === "oidc"
     ? new UserManager({
-        authority: config.cognitoAuthority,
-        client_id: config.cognitoClientId,
+        authority: config.oidcIssuer,
+        client_id: config.oidcClientId,
         redirect_uri: `${window.location.origin}/auth/callback`,
+        post_logout_redirect_uri: `${window.location.origin}/login`,
         response_type: "code",
-        scope: "openid email",
+        scope: "openid offline_access",
+        extraQueryParams: { resource: config.apiResource, prompt: "consent" },
+        extraTokenParams: { resource: config.apiResource },
         userStore: new WebStorageStateStore({ store: window.sessionStorage }),
         automaticSilentRenew: false,
       })

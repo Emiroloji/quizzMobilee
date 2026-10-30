@@ -11,8 +11,8 @@ export type AuthState = { status: "loading" } | { status: "signedOut" } | { stat
 interface AuthContextValue {
   state: AuthState;
   signInDev: (subject: string) => Promise<void>;
-  signInWithCognito: () => Promise<void>;
-  completeCognitoSignIn: () => Promise<void>;
+  signInWithOidc: () => Promise<void>;
+  completeOidcSignIn: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -44,10 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         devSessionStore.save(session);
         apply(session);
       },
-      signInWithCognito: async () => {
+      signInWithOidc: async () => {
         await userManager?.signinRedirect();
       },
-      completeCognitoSignIn: async () => {
+      completeOidcSignIn: async () => {
         await userManager?.signinRedirectCallback();
         apply(await currentOidcSession());
       },

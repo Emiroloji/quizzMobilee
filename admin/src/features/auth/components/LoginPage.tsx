@@ -7,7 +7,7 @@ import { t } from "@/shared/i18n";
 import { useAuth } from "../hooks/AuthProvider";
 
 export function LoginPage() {
-  const { state, signInDev, signInWithCognito } = useAuth();
+  const { state, signInDev, signInWithOidc } = useAuth();
   const [subject, setSubject] = useState("moderator-1");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -29,9 +29,9 @@ export function LoginPage() {
   return (
     <main className="layout stack">
       <h1>{t("auth.title")}</h1>
-      {config.authMode === "cognito" ? (
-        <button className="button" disabled={busy} onClick={() => void run(signInWithCognito)}>
-          {t("auth.cognito")}
+      {config.authMode === "oidc" ? (
+        <button className="button" disabled={busy} onClick={() => void run(signInWithOidc)}>
+          {t("auth.oidc")}
         </button>
       ) : (
         <form

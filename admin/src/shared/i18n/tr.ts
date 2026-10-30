@@ -8,7 +8,7 @@ export const tr = {
   nav: { home: "Ana sayfa", preview: "İçerik önizleme" },
   auth: {
     title: "Moderasyon paneline giriş",
-    cognito: "Kurum hesabıyla giriş yap",
+    oidc: "Giriş yap",
     devSubjectLabel: "Geliştirici kimliği",
     devSignIn: "Geliştirici olarak giriş yap",
     signOut: "Çıkış yap",

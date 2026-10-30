@@ -4,7 +4,13 @@ const common = { apiUrl: z.url(), assetBaseUrl: z.url() };
 
 const configSchema = z.discriminatedUnion("authMode", [
   z.object({ authMode: z.literal("dev"), ...common }),
-  z.object({ authMode: z.literal("cognito"), ...common, cognitoAuthority: z.url(), cognitoClientId: z.string().min(1) }),
+  z.object({
+    authMode: z.literal("oidc"),
+    ...common,
+    oidcIssuer: z.url(),
+    oidcClientId: z.string().min(1),
+    apiResource: z.url(),
+  }),
 ]);
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -22,8 +28,9 @@ export function parseConfig(env: Readonly<Record<string, string | undefined>>, i
     authMode: env.VITE_AUTH_MODE ?? fallback.authMode,
     apiUrl: env.VITE_API_URL ?? fallback.apiUrl,
     assetBaseUrl: env.VITE_ASSET_BASE_URL ?? fallback.assetBaseUrl,
-    cognitoAuthority: env.VITE_COGNITO_AUTHORITY,
-    cognitoClientId: env.VITE_COGNITO_CLIENT_ID,
+    oidcIssuer: env.VITE_OIDC_ISSUER,
+    oidcClientId: env.VITE_OIDC_CLIENT_ID,
+    apiResource: env.VITE_API_RESOURCE,
   });
 }
 
